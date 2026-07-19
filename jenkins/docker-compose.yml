@@ -1,0 +1,42 @@
+name: jenkins
+
+networks:
+  jenkins_net:
+    name: jenkins_net
+    driver: bridge
+
+volumes:
+  jenkins_home:
+    name: jenkins_home
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DOCKER_GID: ${DOCKER_GID:-999}
+    image: infra/jenkins:local
+    container_name: jenkins
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - .env
+    environment:
+      CASC_JENKINS_CONFIG: /var/jenkins_home/casc.yaml
+      JAVA_OPTS: -Djenkins.install.runSetupWizard=false
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./casc.yaml:/var/jenkins_home/casc.yaml:ro
+    networks:
+      - jenkins_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s

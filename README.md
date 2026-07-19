@@ -54,7 +54,8 @@ Jenkins will eventually migrate from AWS to the homelab; the repository is desig
 infra/
 ├── scripts/    # Parameter-driven install/deploy/backup/update scripts
 ├── docker/     # Compose stacks grouped by concern (e.g. portainer/)
-├── jenkins/    # Dockerized Jenkins + declarative pipelines
+├── jenkins/    # Dockerized Jenkins, configured as code (JCasC)
+├── vars/       # Jenkins Shared Library (must live at repo root, see vars/README.md)
 ├── nginx/      # Reverse proxy, SSL termination, security headers
 ├── ssl/        # Certificate material (runtime only, not committed)
 ├── docs/       # Architecture, deployment, backup, restore, recovery docs
