@@ -53,7 +53,7 @@ Jenkins will eventually migrate from AWS to the homelab; the repository is desig
 ```
 infra/
 ├── scripts/    # Parameter-driven install/deploy/backup/update scripts
-├── docker/     # Compose files and per-environment overrides
+├── docker/     # Compose stacks grouped by concern (e.g. portainer/)
 ├── jenkins/    # Dockerized Jenkins + declarative pipelines
 ├── nginx/      # Reverse proxy, SSL termination, security headers
 ├── ssl/        # Certificate material (runtime only, not committed)

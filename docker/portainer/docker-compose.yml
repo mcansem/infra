@@ -1,0 +1,31 @@
+name: portainer
+
+networks:
+  portainer_net:
+    name: portainer_net
+    driver: bridge
+
+volumes:
+  portainer_data:
+    name: portainer_data
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.39.5-alpine
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "9443:9443" # Web UI (HTTPS)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - portainer_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:9443"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

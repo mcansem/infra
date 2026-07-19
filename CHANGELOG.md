@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Portainer CE management stack (`docker/portainer/docker-compose.yml`), deployed on the management host
+- Portainer Agent stack (`docker/portainer/agent-compose.yml`), deployed on remote hosts to be managed
+
 ## [0.1.0] - 2026-07-20
 
 ### Added
