@@ -7,13 +7,17 @@ Dockerized Jenkins server, configured entirely as code (JCasC) — no manual cli
 1. Copy `.env.example` to `.env` and fill in real values:
    - `JENKINS_ADMIN_USER` / `JENKINS_ADMIN_PASSWORD` — the initial admin login (JCasC creates this user, no setup wizard)
    - `DOCKER_GID` — the host's `docker` group GID, so the `jenkins` user inside the container can use the mounted `docker.sock`. Get it with:
+
      ```bash
      getent group docker | cut -d: -f3
      ```
+
 2. Build and start:
+
    ```bash
    docker compose -f jenkins/docker-compose.yml up -d --build
    ```
+
 3. Log in at `http://<host>:8080` with the credentials from `.env`.
 4. Add deploy credentials manually via **Manage Jenkins → Credentials** (e.g. an SSH key with ID `deploy-ssh-key`, matching what [vars/standardDeployPipeline.groovy](../vars/standardDeployPipeline.groovy) expects). These are never stored in this repo.
 
