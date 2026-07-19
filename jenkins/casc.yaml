@@ -1,0 +1,32 @@
+jenkins:
+  systemMessage: "infra repo — Jenkins CI/CD, managed via JCasC (jenkins/casc.yaml). Do not configure by hand."
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  globalLibraries:
+    libraries:
+      - name: "infra-shared-library"
+        defaultVersion: "main"
+        implicit: false
+        allowVersionOverride: true
+        includeInChangesets: false
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote: "https://github.com/mcansem/infra.git"
+                traits:
+                  - "gitBranchDiscovery"
+
+# Deploy credentials (e.g. `deploy-ssh-key`, referenced by vars/standardDeployPipeline.groovy)
+# are intentionally NOT defined here - add them via Manage Jenkins -> Credentials after first boot.
+# Never commit private keys or secrets to this repo.

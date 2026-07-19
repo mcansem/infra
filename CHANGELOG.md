@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Jenkins server stack (`jenkins/docker-compose.yml`), configured entirely via JCasC (`jenkins/casc.yaml`)
+- Jenkins Shared Library (`vars/standardDeployPipeline.groovy`): GitHub -> Build -> Docker Build -> Deploy via SSH, parametrized by target environment/host
+
 ## [0.2.0] - 2026-07-20
 
 ### Added

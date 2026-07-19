@@ -1,0 +1,8 @@
+git
+workflow-aggregator
+docker-workflow
+ssh-agent
+configuration-as-code
+github
+github-branch-source
+credentials-binding
