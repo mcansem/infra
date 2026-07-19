@@ -1,0 +1,38 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# SSL / certificates (runtime material, never committed)
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+ssl/*.csr
+ssl/*.p12
+
+# Backups
+backups/
+*.bak
+*.tar.gz
+*.sql.gz
+
+# Jenkins runtime data
+jenkins/jenkins_home/
+jenkins/workspace/
+
+# Docker
+*.override.yml
+!docker-compose.override.example.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
