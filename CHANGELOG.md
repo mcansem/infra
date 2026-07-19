@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-20
+
+### Added
+
+- Portainer CE management stack (`docker/portainer/docker-compose.yml`), deployed on the management host
+- Portainer Agent stack (`docker/portainer/agent-compose.yml`), deployed on remote hosts to be managed
+
 ## [0.1.0] - 2026-07-20
 
 ### Added
@@ -21,5 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue and pull request templates
 - README badges (license, lint status, release, Conventional Commits, Keep a Changelog)
 
-[Unreleased]: https://github.com/mcansem/infra/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mcansem/infra/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mcansem/infra/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mcansem/infra/releases/tag/v0.1.0

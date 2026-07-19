@@ -32,17 +32,17 @@ Infrastructure defined here must remain reusable regardless of which application
 
 ## Roadmap
 
-**Short term**
+### Short term
 
-```
+```text
 GitHub → AWS EC2 (Ubuntu, Docker, Jenkins, Portainer)
        → Google Cloud VM (Ubuntu, Docker, Nginx, PostgreSQL, Next.js, .NET API)
        → Oracle Cloud (Production)
 ```
 
-**Long term**
+### Long term
 
-```
+```text
 GitHub → Homelab → Oracle Cloud (Production)
 ```
 
@@ -50,10 +50,10 @@ Jenkins will eventually migrate from AWS to the homelab; the repository is desig
 
 ## Repository Structure
 
-```
+```text
 infra/
 ├── scripts/    # Parameter-driven install/deploy/backup/update scripts
-├── docker/     # Compose files and per-environment overrides
+├── docker/     # Compose stacks grouped by concern (e.g. portainer/)
 ├── jenkins/    # Dockerized Jenkins + declarative pipelines
 ├── nginx/      # Reverse proxy, SSL termination, security headers
 ├── ssl/        # Certificate material (runtime only, not committed)

@@ -3,7 +3,13 @@
     "default": true,
     "MD013": false,
     "MD033": false,
-    "MD041": false
+    "MD041": false,
+    // docs/project-specification.md intentionally uses multiple top-level
+    // H1 sections (flat spec structure) rather than a single H1 + nested H2s
+    "MD025": false,
+    // CHANGELOG.md repeats "### Added"/"### Fixed" etc. under every version
+    // heading by design (Keep a Changelog format) - only flag true duplicates
+    "MD024": { "siblings_only": true }
   },
   "globs": ["**/*.md"],
   "ignores": ["**/node_modules/**"]
