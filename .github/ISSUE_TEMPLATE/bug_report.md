@@ -32,6 +32,6 @@ Which part of the repo is affected? (`scripts/`, `docker/`, `jenkins/`, `nginx/`
 
 ## Logs / Output
 
-```
+```text
 paste relevant output here
 ```

@@ -8,7 +8,7 @@ Docker management UI (Portainer CE), fulfilling the spec's requirement that one 
 
 - **`docker-compose.yml`** — Portainer **server**. Deployed once, on the management host (the AWS EC2 host, per the Short Term roadmap):
 
-  ```
+  ```bash
   docker compose -f docker/portainer/docker-compose.yml up -d
   ```
 
@@ -16,7 +16,7 @@ Docker management UI (Portainer CE), fulfilling the spec's requirement that one 
 
 - **`agent-compose.yml`** — Portainer **Agent**. Deployed on every *remote* Docker host you want the server to manage (e.g. the Google Cloud VM, Oracle Cloud host):
 
-  ```
+  ```bash
   docker compose -f docker/portainer/agent-compose.yml up -d
   ```
 
