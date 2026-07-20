@@ -1,0 +1,95 @@
+name: app
+
+networks:
+  app_net:
+    name: app_net
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: app_postgres_data
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: app-nginx
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - nextjs
+      - dotnet-api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../../ssl/app:/etc/nginx/certs:ro
+      - ../../ssl/.webroot:/var/www/certbot:ro
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: app-postgres
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nextjs:
+    image: ${REGISTRY_URL}/portfolio-web:${WEB_IMAGE_TAG:-latest}
+    container_name: app-nextjs
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_ENV: production
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  dotnet-api:
+    image: ${REGISTRY_URL}/portfolio-api:${API_IMAGE_TAG:-latest}
+    container_name: app-dotnet-api
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

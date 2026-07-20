@@ -1,7 +1,14 @@
 # nginx/
 
-> Status: empty. Landing in v0.4.0+ (Staging/Production Environment phases).
+Reverse proxy configuration, consumed by [docker/app/](../docker/app/) (the staging/production app stack) and mounted read-only into its `nginx` service — this folder holds the config file, not the compose service definition itself.
 
-This folder will hold reverse proxy configuration: per-application server blocks, SSL termination, compression, security headers, and optional rate limiting.
+## app.conf
 
-Configuration should be production-ready and environment-parametrized, not tutorial-level.
+- Port 80: redirects everything to HTTPS, except `/.well-known/acme-challenge/` (served for Let's Encrypt's webroot verification — see [ssl/README.md](../ssl/README.md)).
+- Port 443: TLS termination, gzip, standard security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `HSTS`), and routing: `/api/` → the .NET API, everything else → Next.js.
+
+Both upstream services are referenced by their Compose service name (`nextjs`, `dotnet-api`) — this config only works mounted into the `docker/app/` stack, on `app_net`.
+
+## Conventions
+
+Production-ready configuration, not tutorial-level: real security headers, no wildcard CORS, TLS termination via a real (or self-signed-until-a-domain-exists) certificate rather than plaintext HTTP.

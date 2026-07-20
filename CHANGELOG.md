@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Private Docker Registry (`docker/registry/docker-compose.yml`), self-hosted, htpasswd-authenticated, TLS-terminated
 - `ssl/obtain-cert.sh`: shared Let's Encrypt (webroot) / self-signed certificate helper used by every TLS-terminating service in this repo
 - Jenkins fronted by TLS-terminating Nginx (`jenkins/nginx.conf`), enabling HTTPS GitHub webhooks; Jenkins itself no longer publishes a host port directly
+- Staging/production app stack (`docker/app/`): Nginx + PostgreSQL + Next.js + .NET API deployed as one unit, base compose plus `docker-compose.staging.yml`/`docker-compose.production.yml` overrides
+- `nginx/app.conf`: TLS termination, gzip, security headers, routes `/api/` to the .NET API and everything else to Next.js
 
 ### Changed
 
