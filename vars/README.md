@@ -14,7 +14,8 @@ An application repo (e.g. `portfolio/`) consumes this library with a minimal `Je
 standardDeployPipeline(
     targetEnv: 'staging',
     targetHost: 'staging.example.com',
-    imageName: 'portfolio-app'
+    imageName: 'portfolio-app',
+    registryUrl: 'https://registry.example.com:5000'
 )
 ```
 

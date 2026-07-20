@@ -1,4 +1,4 @@
-Reusable pipeline: GitHub -&gt; Build -&gt; Docker Build -&gt; Deploy via SSH.
+Reusable pipeline: GitHub -&gt; Build -&gt; Docker Build -&gt; Push -&gt; Deploy via SSH.
 
 <h3>Usage</h3>
 <pre>
@@ -7,17 +7,20 @@ Reusable pipeline: GitHub -&gt; Build -&gt; Docker Build -&gt; Deploy via SSH.
 standardDeployPipeline(
     targetEnv: 'staging',
     targetHost: 'staging.example.com',
-    imageName: 'portfolio-app'
+    imageName: 'portfolio-app',
+    registryUrl: 'https://registry.example.com:5000'
 )
 </pre>
 
 <h3>Parameters</h3>
 <ul>
   <li><b>targetHost</b> (required) - host to deploy to</li>
-  <li><b>imageName</b> (required) - Docker image name to build/tag</li>
+  <li><b>imageName</b> (required) - Docker image name to build/tag/push</li>
   <li><b>targetEnv</b> - environment label for logging (default: staging)</li>
   <li><b>sshCredentialsId</b> - Jenkins credentials ID for the deploy SSH key (default: deploy-ssh-key)</li>
   <li><b>deployUser</b> - SSH user on the target host (default: deploy)</li>
   <li><b>remoteDir</b> - directory on the target host with the app's docker-compose.yml (default: /opt/app)</li>
+  <li><b>registryUrl</b> - private registry URL (default: https://registry.example.com:5000 - override per environment)</li>
+  <li><b>registryCredentialsId</b> - Jenkins credentials ID for the registry (default: registry-credentials)</li>
   <li><b>buildStep</b> - closure with app-specific build steps (default: none)</li>
 </ul>

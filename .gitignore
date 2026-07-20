@@ -8,11 +8,16 @@
 logs/
 
 # SSL / certificates (runtime material, never committed)
-ssl/*.pem
-ssl/*.key
-ssl/*.crt
-ssl/*.csr
-ssl/*.p12
+ssl/**/*.pem
+ssl/**/*.key
+ssl/**/*.crt
+ssl/**/*.csr
+ssl/**/*.p12
+ssl/.webroot/
+ssl/.certbot-conf/
+
+# Registry auth (htpasswd, generated on-host)
+docker/registry/auth/
 
 # Backups
 backups/

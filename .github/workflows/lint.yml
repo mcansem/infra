@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run ShellCheck on scripts
+      - name: Run ShellCheck on all shell scripts
         run: |
           shopt -s globstar nullglob
-          files=(scripts/**/*.sh)
+          files=(**/*.sh)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No shell scripts found yet, skipping."
             exit 0
