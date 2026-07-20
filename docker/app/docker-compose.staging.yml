@@ -1,0 +1,9 @@
+services:
+  nginx:
+    restart: on-failure
+  postgres:
+    restart: on-failure
+  nextjs:
+    restart: on-failure
+  dotnet-api:
+    restart: on-failure
