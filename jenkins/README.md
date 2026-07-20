@@ -12,6 +12,8 @@ Dockerized Jenkins server, configured entirely as code (JCasC) — no manual cli
      getent group docker | cut -d: -f3
      ```
 
+   - Also create the host log directory the `nginx` service writes to (needed for Fail2ban, see [scripts/README.md](../scripts/README.md)): `sudo mkdir -p /var/log/infra/jenkins-nginx`.
+
 2. Bootstrap a certificate so Nginx has something to start with (self-signed first — see [ssl/README.md](../ssl/README.md)):
 
    ```bash

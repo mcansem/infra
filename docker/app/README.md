@@ -4,7 +4,7 @@ The staging/production application stack — Nginx, PostgreSQL, Next.js, .NET AP
 
 ## Bootstrap
 
-1. Copy `.env.example` to `.env` and fill in real values (`DOMAIN_NAME`, `REGISTRY_URL`, `POSTGRES_*`). Required variables use Compose's `${VAR:?message}` syntax — if one is missing, `docker compose up` refuses to start with a clear error instead of silently running with an empty value.
+1. Copy `.env.example` to `.env` and fill in real values (`DOMAIN_NAME`, `REGISTRY_URL`, `POSTGRES_*`). Required variables use Compose's `${VAR:?message}` syntax — if one is missing, `docker compose up` refuses to start with a clear error instead of silently running with an empty value. Also create the host log directory `nginx` writes to (needed for Fail2ban, see [scripts/README.md](../../scripts/README.md)): `sudo mkdir -p /var/log/infra/app-nginx`.
 
 2. Log in to the private registry (see [docker/registry/](../registry/)):
 

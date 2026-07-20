@@ -65,6 +65,9 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ../ssl/jenkins:/etc/nginx/certs:ro
       - ../ssl/.webroot:/var/www/certbot:ro
+      # See docker/app/docker-compose.yml for why this path, not the image's
+      # default /var/log/nginx.
+      - /var/log/infra/jenkins-nginx:/var/log/nginx-file
     networks:
       - jenkins_net
     deploy:

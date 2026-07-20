@@ -1,0 +1,20 @@
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+
+# Bans IPs that repeatedly trip the `limit_req` rate limiting configured in
+# nginx/app.conf and jenkins/nginx.conf.
+[nginx-limit-req]
+enabled = true
+port = http,https
+logpath = /var/log/infra/*/error.log
+
+# Bundled filter for common scanner/bot probe patterns (.env, wp-admin, etc.).
+[nginx-botsearch]
+enabled = true
+port = http,https
+logpath = /var/log/infra/*/access.log

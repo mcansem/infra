@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `docs/roadmap.md`: single source of truth for phase-by-phase scope/status and roadmap revision history (previously duplicated inside `project-specification.md`'s "Versioning Strategy" section, which is why syncing the v0.5.0/v0.8.0 renames took careful edits); includes a Guiding Principles section ("write once, deploy anywhere") and an explicit Out of Scope section (Kubernetes, Terraform, Ansible — deferred to v2.x)
+- `scripts/harden-host.sh`: host-level (not Docker) production hardening — UFW firewall (role-driven port sets for `management`/`app`/`agent` hosts, SSH always allowed before any default-deny policy), Fail2ban (`sshd` + `nginx-limit-req` + `nginx-botsearch` jails via `scripts/fail2ban/jail.local`), `unattended-upgrades`, and an opt-in-only `--harden-ssh` flag (disables password/root SSH login — never runs automatically, given the lockout risk)
 
 ### Changed
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restart policy now distinguishes stateless services (`unless-stopped`/`always`) from stateful/expensive-to-crash-loop ones (`postgres`, `jenkins` itself use bounded `on-failure:5`, never `always`) — `deploy.restart_policy` is not used anywhere, since it's Swarm-only and silently ignored by plain `docker compose up`
   - `docker/app/`'s required `.env` values (`POSTGRES_*`, `REGISTRY_URL`) now use Compose's `${VAR:?message}` syntax — missing values fail startup immediately with a clear error instead of running with empty config
   - `nginx/app.conf` and `jenkins/nginx.conf`: added rate limiting (`limit_req`) and a `Permissions-Policy` header; `nginx/app.conf` also gets a conservative starter `Content-Security-Policy` (omitted for Jenkins, which manages its own CSP)
+- `nginx/app.conf` and `jenkins/nginx.conf` now also log to a file (`/var/log/nginx-file/`), not just stdout — Fail2ban runs on the host and needs a file to tail; `docker/app/docker-compose.yml` and `jenkins/docker-compose.yml` bind-mount that path out to `/var/log/infra/<service>/` on the host
 
 ## [0.4.0] - 2026-07-20
 

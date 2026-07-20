@@ -29,6 +29,11 @@ services:
       - ../../nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
       - ../../ssl/app:/etc/nginx/certs:ro
       - ../../ssl/.webroot:/var/www/certbot:ro
+      # Host-visible logs, for Fail2ban's nginx jails (see scripts/README.md).
+      # Not the image's default /var/log/nginx - that's symlinked to
+      # stdout/stderr for `docker logs`; this is a separate path so both
+      # keep working.
+      - /var/log/infra/app-nginx:/var/log/nginx-file
     networks:
       - app_net
     deploy:
