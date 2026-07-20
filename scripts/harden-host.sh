@@ -41,6 +41,11 @@ detect_ssh_port() {
 }
 
 role_ports() {
+  # Node Exporter (9100) and cAdvisor (8080) from docker/monitoring-agent/
+  # are deliberately NOT listed here - they bind to 127.0.0.1 only by
+  # default (no auth on either), so there's nothing to open by default.
+  # Enabling cross-host Prometheus scraping is a manual, source-IP-scoped
+  # opt-in - see docker/monitoring-agent/README.md.
   case "$1" in
     management) echo "9443/tcp 80/tcp 443/tcp 5000/tcp" ;;
     app)        echo "80/tcp 443/tcp" ;;
