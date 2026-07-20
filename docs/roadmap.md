@@ -71,7 +71,7 @@ Renamed from "Oracle Deployment" — see [Revision History](#revision-history). 
 - Fail2ban configuration
 - Production security defaults
 
-### v0.6.0 — Operations (In Progress)
+### v0.6.0 — Operations (Released)
 
 - `backup.sh`
 - `restore.sh`
