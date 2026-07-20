@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Private Docker Registry (`docker/registry/docker-compose.yml`), self-hosted, htpasswd-authenticated, TLS-terminated
+- `ssl/obtain-cert.sh`: shared Let's Encrypt (webroot) / self-signed certificate helper used by every TLS-terminating service in this repo
+- Jenkins fronted by TLS-terminating Nginx (`jenkins/nginx.conf`), enabling HTTPS GitHub webhooks; Jenkins itself no longer publishes a host port directly
+
+### Changed
+
+- `vars/standardDeployPipeline.groovy`: `Docker Build` stage now also pushes to the private registry (new `registryUrl` / `registryCredentialsId` params)
+- ShellCheck CI job now scans all `**/*.sh` files repo-wide, not just `scripts/**/*.sh` (needed once shell scripts started appearing outside `scripts/`, e.g. `ssl/obtain-cert.sh`)
+
 ## [0.3.0] - 2026-07-20
 
 ### Added

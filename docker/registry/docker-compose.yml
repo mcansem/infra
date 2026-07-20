@@ -1,0 +1,40 @@
+name: registry
+
+networks:
+  registry_net:
+    name: registry_net
+    driver: bridge
+
+volumes:
+  registry_data:
+    name: registry_data
+
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/fullchain.pem
+      REGISTRY_HTTP_TLS_KEY: /certs/privkey.pem
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+      - ../../ssl/registry:/certs:ro
+      - ./auth:/auth:ro
+    networks:
+      - registry_net
+    healthcheck:
+      # wget exit 0 = 2xx/3xx, exit 8 = server responded with an HTTP error
+      # (e.g. 401 from the htpasswd auth) - both mean the service is up.
+      test: ["CMD-SHELL", "wget -qO- --no-check-certificate https://localhost:5000/v2/ >/dev/null 2>&1; test $? -eq 0 -o $? -eq 8"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

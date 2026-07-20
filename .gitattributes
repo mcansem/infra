@@ -1,0 +1,5 @@
+# Force LF line endings regardless of platform - most of this repo runs on
+# Linux hosts, and CRLF in a shell script breaks the shebang interpreter.
+* text=auto eol=lf
+
+*.sh text eol=lf
