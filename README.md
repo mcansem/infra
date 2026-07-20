@@ -38,7 +38,7 @@ See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase roadmap, curr
 
 ```text
 infra/
-├── scripts/    # Parameter-driven host/deploy automation (harden-host.sh, install/deploy/backup/update)
+├── scripts/    # Host hardening + operations (harden-host.sh, backup/restore/update/cleanup/deploy)
 ├── docker/     # Compose stacks grouped by concern (e.g. portainer/)
 ├── jenkins/    # Dockerized Jenkins, configured as code (JCasC)
 ├── vars/       # Jenkins Shared Library (must live at repo root, see vars/README.md)

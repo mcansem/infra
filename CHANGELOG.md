@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/backup.sh` — local, verified, rotated backups per host role (`pg_dump -Fc` for Postgres, volume tars for `jenkins_home`/`portainer_data`/`registry_data`); off-host replication is documented (`docs/backup.md`), not scripted, since the destination varies per deployment
+- `scripts/restore.sh` — restores a backup; destructive, so it's a dry run unless `--yes-i-am-sure` is passed; validates Postgres connectivity and table presence after a restore
+- `scripts/update.sh` — on-demand `apt upgrade` + `docker compose pull/up` per role, image prune, idempotent logrotate config install
+- `scripts/cleanup.sh` — periodic `docker system prune`/build-cache prune, never touches volumes
+- `scripts/deploy.sh` — manual/fallback counterpart to `vars/standardDeployPipeline.groovy`'s SSH deploy stage (pull infra config → tag rollback images → pull → up → wait-for-healthy → roll back on failure), for when Jenkins isn't the one triggering deployment
+- `scripts/logrotate/infra-nginx.conf` — rotates the file-based nginx logs added in v0.5.0 for Fail2ban
+- Real content for `docs/backup.md` and `docs/restore.md` (stubs since v0.1.0), including a disaster-recovery walkthrough
+
+### Changed
+
+- `docs/roadmap.md`: v0.6.0 gains `deploy.sh` (confirmed with the user — its functional twin already existed as the Jenkins pipeline's deploy stage, but a standalone fallback is valuable when Jenkins itself isn't available); v0.5.0 status corrected to Released
+- `docs/project-specification.md`'s Operations section gains `restore.sh`/`cleanup.sh` entries, matching `docs/roadmap.md`
+
 ## [0.5.0] - 2026-07-20
 
 ### Added

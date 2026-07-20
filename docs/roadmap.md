@@ -54,7 +54,7 @@ Jenkins in Docker, configured entirely as code (JCasC), declarative pipeline (`G
 
 Nginx, PostgreSQL, Next.js, .NET API, SSL. Also added during implementation (prerequisites for pulling real images): a self-hosted private Docker Registry (no Docker Hub/GHCR dependency), TLS in front of Jenkins for GitHub webhooks, and `ssl/obtain-cert.sh` (Let's Encrypt webroot / self-signed) as the shared certificate mechanism every TLS-terminating service uses.
 
-### v0.5.0 — Production Hardening (In Progress)
+### v0.5.0 — Production Hardening (Released)
 
 Renamed from "Oracle Deployment" — see [Revision History](#revision-history). Cloud-agnostic hardening applied uniformly across every stack:
 
@@ -71,12 +71,13 @@ Renamed from "Oracle Deployment" — see [Revision History](#revision-history). 
 - Fail2ban configuration
 - Production security defaults
 
-### v0.6.0 — Operations (Planned)
+### v0.6.0 — Operations (In Progress)
 
 - `backup.sh`
 - `restore.sh`
 - `update.sh`
 - `cleanup.sh`
+- `deploy.sh` — manual/fallback counterpart to `vars/standardDeployPipeline.groovy`'s SSH deploy stage, for when Jenkins isn't the one triggering deployment
 - Backup verification
 - Restore validation
 - Maintenance automation
