@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `docker/monitoring-agent/`: Node Exporter (host metrics) + cAdvisor (per-container metrics), deployed identically on every host role. Both bind to `127.0.0.1` only by default (neither has any authentication) — cross-host Prometheus scraping is a documented, source-IP-scoped manual opt-in, not scripted
+
+### Changed
+
+- `scripts/harden-host.sh`: `role_ports()` documents why the exporter ports are deliberately not in the default UFW allowlist
+
 ## [0.6.0] - 2026-07-21
 
 ### Added
