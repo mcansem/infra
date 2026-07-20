@@ -282,13 +282,29 @@ Volume backup
 
 Rotation
 
+Verification
+
+restore.sh
+
+Database restore
+
+Volume restore
+
+Validation
+
 update.sh
 
 Ubuntu updates
 
 Docker updates
 
-Cleanup
+cleanup.sh
+
+Docker system cleanup
+
+Build cache cleanup
+
+Never touches volumes
 
 deploy.sh
 
