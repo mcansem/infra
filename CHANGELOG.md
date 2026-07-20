@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `docs/roadmap.md`: single source of truth for phase-by-phase scope/status and roadmap revision history (previously duplicated inside `project-specification.md`'s "Versioning Strategy" section, which is why syncing the v0.5.0/v0.8.0 renames took careful edits); includes a Guiding Principles section ("write once, deploy anywhere") and an explicit Out of Scope section (Kubernetes, Terraform, Ansible — deferred to v2.x)
+
+### Changed
+
+- `docs/project-specification.md`: v0.5.0 renamed from "Oracle Deployment" to "Production Hardening" (cloud-agnostic — a cloud provider is a deployment target, not a repo feature); v0.8.0 renamed from "Platform Migration" to "Platform Integration"
+- Roadmap scope expanded per an architecture change request: v0.5.0 (Production Hardening) now also covers UFW, Fail2ban, and production security defaults; v0.6.0 (Operations) expanded to `restore.sh`/`cleanup.sh`, backup/restore verification, log cleanup and rotation; v0.7.0 (Observability) expanded to Uptime Kuma, Node Exporter, cAdvisor; v0.9.0 (Documentation) expanded to cover `roadmap.md`/`project-specification.md` themselves, architecture diagrams, runbooks, onboarding docs. Scope changes only — no new code in this pass, see `docs/roadmap.md`'s Revision History for the full reasoning.
+- `README.md` and `docs/project-specification.md` no longer embed the roadmap inline — both now point to `docs/roadmap.md`
+- `docs/project-specification.md`: added a Guiding Principles section and an Out of Scope section; `Repository Structure` now lists `vars/` (missing since v0.3.0)
+- Production hardening applied across all four existing stacks (`docker/portainer/`, `docker/registry/`, `jenkins/`, `docker/app/`):
+  - Healthcheck-based `depends_on` (`condition: service_healthy`) wherever one service must be actually ready before another starts, not just started
+  - `stop_grace_period` on every service, tuned to what each process needs to drain cleanly
+  - Resource limits (`deploy.resources.limits`) on every service that didn't already have them
+  - Restart policy now distinguishes stateless services (`unless-stopped`/`always`) from stateful/expensive-to-crash-loop ones (`postgres`, `jenkins` itself use bounded `on-failure:5`, never `always`) — `deploy.restart_policy` is not used anywhere, since it's Swarm-only and silently ignored by plain `docker compose up`
+  - `docker/app/`'s required `.env` values (`POSTGRES_*`, `REGISTRY_URL`) now use Compose's `${VAR:?message}` syntax — missing values fail startup immediately with a clear error instead of running with empty config
+  - `nginx/app.conf` and `jenkins/nginx.conf`: added rate limiting (`limit_req`) and a `Permissions-Policy` header; `nginx/app.conf` also gets a conservative starter `Content-Security-Policy` (omitted for Jenkins, which manages its own CSP)
+
 ## [0.4.0] - 2026-07-20
 
 ### Added

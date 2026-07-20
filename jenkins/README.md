@@ -50,6 +50,8 @@ The actual `GitHub → Build → Docker Build → Push → Deploy via SSH` pipel
 
 ## Conventions
 
-- Healthcheck, restart policy, named volume, custom network — same as every other stack in this repo.
+- Healthcheck (with `nginx` waiting on `jenkins`'s `service_healthy` condition, not just "started"), named volume, custom network, resource limits (`jenkins` ~2 CPU/2G for build headroom, its `nginx` ~0.5 CPU/128M) — same hardening baseline as every other stack in this repo.
+- `jenkins` itself restarts `on-failure:5`, not `always` — a persistently crash-looping Jenkins (bad plugin, broken JCasC) shouldn't restart forever; capping retries forces a human to look. Its `nginx` stays `unless-stopped` since restarting it has no side effects. See [docker/app/README.md](../docker/app/README.md) for the same reasoning applied to `postgres`.
+- `jenkins`'s `stop_grace_period` is 60s (may have running builds to let finish); `nginx`'s is 10s.
 - Image build args and admin credentials come from a gitignored `.env` (see `.env.example`) — never committed.
-- Jenkins itself is no longer published on a host port — only reachable through the `nginx` service on 80/443, same pattern used for every TLS-terminated service in this repo.
+- Jenkins itself is no longer published on a host port — only reachable through the `nginx` service on 80/443, same pattern used for every TLS-terminated service in this repo. Its `nginx.conf` adds rate limiting (10r/s, burst 20) and the same security headers as [nginx/app.conf](../nginx/app.conf), minus `Content-Security-Policy` (Jenkins manages its own CSP internally).

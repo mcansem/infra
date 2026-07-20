@@ -46,6 +46,24 @@ Infrastructure must be reusable regardless of the application.
 
 ---
 
+# Guiding Principles
+
+Write once, deploy anywhere.
+
+Infrastructure code should not change depending on where it is deployed. Cloud providers (AWS, Google Cloud, Oracle Cloud, future Homelab) are deployment targets, not repository features.
+
+* Infrastructure-as-Code
+* Cloud-agnostic
+* Modular
+* Idempotent
+* Reusable
+* Production-ready
+* Automation-first
+* Self-hosting friendly
+* Future-proof for Homelab
+
+---
+
 # Current Infrastructure Roadmap
 
 Short Term
@@ -105,6 +123,8 @@ scripts/
 docker/
 
 jenkins/
+
+vars/
 
 nginx/
 
@@ -306,6 +326,10 @@ The docs folder should include:
 
 architecture.md
 
+roadmap.md
+
+project-specification.md
+
 deployment.md
 
 backup.md
@@ -346,119 +370,7 @@ Semantic Versioning will be adopted from the very beginning.
 
 The project will evolve through incremental releases.
 
-Roadmap:
-
-v0.1.0
-
-Repository Foundation
-
-README
-
-CHANGELOG
-
-LICENSE
-
-Folder Structure
-
-Basic Documentation
-
-v0.2.0
-
-Docker Infrastructure
-
-Docker
-
-Compose
-
-Networks
-
-Volumes
-
-Portainer
-
-v0.3.0
-
-CI/CD
-
-Jenkins
-
-Pipeline
-
-SSH Deployment
-
-v0.4.0
-
-Staging Environment
-
-Nginx
-
-PostgreSQL
-
-Next.js
-
-.NET
-
-SSL
-
-v0.5.0
-
-Production Environment
-
-Oracle Deployment
-
-Production Configuration
-
-Healthchecks
-
-v0.6.0
-
-Operations
-
-Backup
-
-Restore
-
-Update
-
-Cleanup
-
-v0.7.0
-
-Observability
-
-Prometheus
-
-Grafana
-
-Monitoring
-
-Alerts
-
-v0.8.0
-
-Homelab
-
-Migration
-
-Self-hosted Jenkins
-
-Internal Infrastructure
-
-v0.9.0
-
-Documentation
-
-Architecture
-
-Runbooks
-
-Recovery Guides
-
-Diagrams
-
-v1.0.0
-
-Production Ready Stable Release
+See [docs/roadmap.md](roadmap.md) for the full phase-by-phase roadmap (v0.1.0 through v1.0.0), current status of each phase, and the history of roadmap revisions.
 
 ---
 
@@ -518,6 +430,14 @@ Deprecated (when applicable)
 
 ---
 
+# Out of Scope
+
+Kubernetes, Terraform, and Ansible are intentionally excluded from the v1 roadmap.
+
+They are not rejected permanently. They belong to a future v2.x roadmap, after the Docker-based infrastructure reaches a stable v1.0.0 release.
+
+---
+
 # Final Goal
 
 The final result should not simply be a deployment repository.
@@ -526,13 +446,6 @@ It should become a reusable Infrastructure platform that can support multiple ap
 
 The repository should reflect real-world DevOps practices rather than tutorial-level examples.
 
-Whenever architectural decisions are made, prioritize:
-
-* Simplicity
-* Reusability
-* Maintainability
-* Automation
-* Scalability
-* Production-readiness
+Whenever architectural decisions are made, prioritize the Guiding Principles defined at the top of this document.
 
 If multiple implementations are possible, always recommend the solution that would be preferred by an experienced Senior DevOps Engineer, and explain the trade-offs before generating code.

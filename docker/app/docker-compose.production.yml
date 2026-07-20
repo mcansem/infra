@@ -1,27 +1,11 @@
 services:
-  nextjs:
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-
-  dotnet-api:
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-
-  postgres:
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 1G
-
   nginx:
     restart: always
+  nextjs:
+    restart: always
+  dotnet-api:
+    restart: always
+  # Same bounded-retry reasoning as staging (see docker-compose.staging.yml) -
+  # postgres never gets an unbounded restart loop.
+  postgres:
+    restart: on-failure:5

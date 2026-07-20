@@ -4,7 +4,7 @@ The staging/production application stack — Nginx, PostgreSQL, Next.js, .NET AP
 
 ## Bootstrap
 
-1. Copy `.env.example` to `.env` and fill in real values (`DOMAIN_NAME`, `REGISTRY_URL`, `POSTGRES_*`).
+1. Copy `.env.example` to `.env` and fill in real values (`DOMAIN_NAME`, `REGISTRY_URL`, `POSTGRES_*`). Required variables use Compose's `${VAR:?message}` syntax — if one is missing, `docker compose up` refuses to start with a clear error instead of silently running with an empty value.
 
 2. Log in to the private registry (see [docker/registry/](../registry/)):
 
@@ -41,8 +41,11 @@ For production, swap `docker-compose.staging.yml` for `docker-compose.production
 
 ## Environments
 
-`docker-compose.yml` is the base; `docker-compose.staging.yml` and `docker-compose.production.yml` are override files (the pattern decided for this repo back at v0.1.0 — override files over Compose profiles). Production adds `restart: always` and resource limits; staging uses `restart: on-failure` for faster feedback while iterating.
+`docker-compose.yml` is the base (includes resource limits, since those are safe defaults regardless of environment); `docker-compose.staging.yml` and `docker-compose.production.yml` are override files (the pattern decided for this repo back at v0.1.0 — override files over Compose profiles) that only change `restart` policy:
+
+- **Stateless services** (`nginx`, `nextjs`, `dotnet-api`) — `on-failure` in staging (visible failures while iterating), `always` in production (maximum uptime; safe because restarting them has no side effects).
+- **`postgres`** — `on-failure:5` in *both* environments. An unbounded restart loop against a stateful service risks repeated disk I/O against a possibly-corrupt data directory; capping retries forces a human to look rather than crash-looping forever. (This is the plain Compose `restart:` field's `on-failure:N` form — the Swarm-only `deploy.restart_policy` block is not honored by plain `docker compose up` at all, so it's not used anywhere in this repo.)
 
 ## Conventions
 
-Healthcheck, restart policy, named volume, custom network, pinned image tags — same as every other stack in this repo.
+Healthcheck (including `service_healthy` conditions in `depends_on`, not just "started"), restart policy, `stop_grace_period`, resource limits, named volume, custom network, pinned image tags — same hardening baseline as every other stack in this repo.

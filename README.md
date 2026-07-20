@@ -32,21 +32,7 @@ Infrastructure defined here must remain reusable regardless of which application
 
 ## Roadmap
 
-### Short term
-
-```text
-GitHub → AWS EC2 (Ubuntu, Docker, Jenkins, Portainer)
-       → Google Cloud VM (Ubuntu, Docker, Nginx, PostgreSQL, Next.js, .NET API)
-       → Oracle Cloud (Production)
-```
-
-### Long term
-
-```text
-GitHub → Homelab → Oracle Cloud (Production)
-```
-
-Jenkins will eventually migrate from AWS to the homelab; the repository is designed with this migration in mind.
+See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase roadmap, current status of each phase, the deployment journey (short/long term), and the history of roadmap revisions.
 
 ## Repository Structure
 
@@ -58,7 +44,7 @@ infra/
 ├── vars/       # Jenkins Shared Library (must live at repo root, see vars/README.md)
 ├── nginx/      # Reverse proxy, SSL termination, security headers
 ├── ssl/        # Certificate material (runtime only, not committed)
-├── docs/       # Architecture, deployment, backup, restore, recovery docs
+├── docs/       # Spec, roadmap, architecture, deployment, backup, restore, recovery docs
 └── .github/    # Issue/PR templates, CI workflows
 ```
 
@@ -66,7 +52,7 @@ Each folder contains its own `README.md` describing its purpose and current stat
 
 ## Versioning Strategy
 
-This project follows [Semantic Versioning](https://semver.org/) from the very first commit. See [CHANGELOG.md](CHANGELOG.md) for release history and [docs/project-specification.md](docs/project-specification.md) for the full technical specification and version-by-version roadmap (v0.1.0 → v1.0.0).
+This project follows [Semantic Versioning](https://semver.org/) from the very first commit. See [CHANGELOG.md](CHANGELOG.md) for release history, [docs/roadmap.md](docs/roadmap.md) for the version-by-version roadmap (v0.1.0 → v1.0.0), and [docs/project-specification.md](docs/project-specification.md) for the full technical specification.
 
 ## Contributing
 

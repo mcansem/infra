@@ -33,4 +33,4 @@ Because the cert comes from a real Let's Encrypt CA (once a domain is in place),
 
 ## Conventions
 
-Same as every other stack in this repo: healthcheck, restart policy, named volume, custom network, pinned image tag (`registry:2`, the official Distribution image).
+Same as every other stack in this repo: healthcheck, restart policy (`unless-stopped` — the registry is stateless enough to restart freely, unlike a database), `stop_grace_period` (10s), resource limits (1 CPU/512M), named volume, custom network, pinned image tag (`registry:2`, the official Distribution image).
