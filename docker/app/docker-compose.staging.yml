@@ -1,9 +1,12 @@
 services:
   nginx:
     restart: on-failure
-  postgres:
-    restart: on-failure
   nextjs:
     restart: on-failure
   dotnet-api:
     restart: on-failure
+  # Postgres gets a bounded retry count in every environment, not just
+  # production - an unbounded crash-loop against a stateful service wastes
+  # disk I/O and can corrupt data files, regardless of which env it's in.
+  postgres:
+    restart: on-failure:5

@@ -22,9 +22,11 @@ Docker management UI (Portainer CE), fulfilling the spec's requirement that one 
 
   Then, in the Portainer UI, add a new **Environment** pointing to `<remote-host-ip>:9001`.
 
+Two other stacks live alongside `portainer/` here: [`registry/`](registry/) (private Docker registry) and [`app/`](app/) (the staging/production application stack) — see their own READMEs.
+
 ## Conventions
 
-- Every service defines a healthcheck, an explicit restart policy, named volumes, and a custom network — no anonymous volumes or reliance on the default bridge network.
+- Every service defines a healthcheck, an explicit restart policy, `stop_grace_period`, resource limits, named volumes, and a custom network — no anonymous volumes or reliance on the default bridge network.
 - Images are pinned to a specific version tag, never `latest`, for reproducibility.
 - Portainer images specifically use the `-alpine` tag variant: the default image is built `FROM scratch` (no shell, no `wget`), which means a Docker-native `HEALTHCHECK` cannot run against it at all. The alpine variant ships `sh`/`wget` so the healthcheck actually works.
-- Future application stacks (Nginx, PostgreSQL, Next.js, .NET) will land in their own subfolder starting v0.4.0, each with a base `docker-compose.yml` plus per-environment override files (`docker-compose.staging.yml`, `docker-compose.production.yml`).
+- Restart policy follows the same stateless/stateful split explained in [docker/app/README.md](app/README.md#environments): Portainer and its Agent are stateless-enough to restart freely (`unless-stopped`); anything holding a database restarts with a bounded `on-failure:N` instead.
