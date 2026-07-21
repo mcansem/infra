@@ -124,7 +124,7 @@ Complete documentation set:
 - Operational runbooks
 - Onboarding documentation
 
-### v1.0.0 — Production Ready Stable Release (Planned)
+### v1.0.0 — Production Ready Stable Release (In Progress)
 
 Final stabilization pass.
 
