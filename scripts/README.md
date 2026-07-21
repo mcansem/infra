@@ -1,6 +1,6 @@
 # scripts/
 
-Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`.
+Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`. Plus `validate-compose.sh`, a CI-focused check rather than something you'd run on a host.
 
 Conventions (see [CONTRIBUTING.md](../CONTRIBUTING.md)):
 
@@ -122,3 +122,11 @@ Not auto-installed into crontab — add these yourself once a host is configured
 ```
 
 (daily backup, weekly update, weekly cleanup shortly after — adjust the role/environment arguments and paths for the actual host)
+
+## validate-compose.sh
+
+```bash
+scripts/validate-compose.sh
+```
+
+Runs `docker compose config` against every `docker-compose.yml` (and staging/production override combination) in this repo, using each stack's `.env.example` for dummy values where a stack requires `${VAR:?}` variables — never overwrites a real `.env` if one already exists. Wired into CI ([.github/workflows/lint.yml](../.github/workflows/lint.yml)'s `compose-validate` job) so every PR gets an automatic syntax/structure check, closing the "reviewed by eye only, no Docker on this machine" gap every phase before v1.0.0 had to accept. Also runnable locally, anywhere Docker is available.

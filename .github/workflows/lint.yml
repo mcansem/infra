@@ -31,3 +31,11 @@ jobs:
         uses: DavidAnson/markdownlint-cli2-action@v17
         with:
           globs: "**/*.md"
+
+  compose-validate:
+    name: Docker Compose Config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate every compose stack
+        run: bash scripts/validate-compose.sh

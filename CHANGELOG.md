@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/validate-compose.sh`: runs `docker compose config` against every stack (and staging/production override combination), using each `.env.example` for dummy required-variable values — closes the "reviewed by eye only, no Docker on this machine" gap every phase before this one had to accept. Wired into CI as a new `compose-validate` job in `.github/workflows/lint.yml`, and runnable locally
+
 ## [0.9.0] - 2026-07-21
 
 ### Added
