@@ -1,0 +1,138 @@
+name: observability
+
+networks:
+  observability_net:
+    name: observability_net
+    driver: bridge
+  # External - created by docker/monitoring-agent/docker-compose.yml
+  # (deploy that first). Prometheus joins it to scrape node-exporter/
+  # cadvisor by container name - their host-published 127.0.0.1 ports
+  # are NOT reachable from inside this container (127.0.0.1 there means
+  # this container's own loopback, not the host's), so same-host
+  # scraping has to go over a shared Docker network instead.
+  monitoring_agent_net:
+    name: monitoring_agent_net
+    external: true
+
+volumes:
+  prometheus_data:
+    name: prometheus_data
+  alertmanager_data:
+    name: alertmanager_data
+  grafana_data:
+    name: grafana_data
+  uptime_kuma_data:
+    name: uptime_kuma_data
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.13.1
+    container_name: prometheus
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    # Internal only - no published port, no auth of its own. Reached by
+    # Grafana over observability_net; for ad-hoc debugging, an SSH tunnel.
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - observability_net
+      - monitoring_agent_net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  alertmanager:
+    image: prom/alertmanager:v0.33.1
+    container_name: alertmanager
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    # Internal only - same reasoning as prometheus.
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - observability_net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  grafana:
+    image: grafana/grafana:13.0.3
+    container_name: grafana
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN:?GRAFANA_DOMAIN is required}
+    # No published port - reached through docker/management-proxy/ over
+    # this network, same pattern as docker/app/'s nextjs/dotnet-api.
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - observability_net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.4.0
+    container_name: uptime-kuma
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    # No published port - reached through docker/management-proxy/, same
+    # as grafana above. External availability checks (public URLs) don't
+    # require this container itself to be internet-reachable on any port
+    # other than its own dashboard.
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - observability_net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

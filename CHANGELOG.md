@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `docker/monitoring-agent/`: Node Exporter (host metrics) + cAdvisor (per-container metrics), deployed identically on every host role. Both bind to `127.0.0.1` only by default (neither has any authentication) — cross-host Prometheus scraping is a documented, source-IP-scoped manual opt-in, not scripted
+- `docker/observability/`: Prometheus, Alertmanager, Grafana, Uptime Kuma on the `management` host. Prometheus/Alertmanager stay internal-only (no meaningful auth of their own); Grafana/Uptime Kuma get a public URL through the new management proxy. Three default alert rules (host down, disk >85%, container missing) with a no-op Alertmanager receiver — wiring a real notification channel needs deployment-specific credentials that don't belong in this repo. Grafana's Prometheus datasource is provisioned as code; dashboards are a documented two-click import (Node Exporter Full, cAdvisor) rather than vendored JSON
+- `docker/management-proxy/`: TLS termination and name-based vhost routing (`jenkins.<domain>`, `grafana.<domain>`, `uptime.<domain>`) for every public UI on the `management` host, replacing the single-vhost `jenkins/nginx.conf`. Domain names are injected via the official nginx image's `envsubst` templating, not hardcoded
 
 ### Changed
 
 - `scripts/harden-host.sh`: `role_ports()` documents why the exporter ports are deliberately not in the default UFW allowlist
+- `jenkins/docker-compose.yml`: the `nginx` service moved out to `docker/management-proxy/` (see above) — `jenkins/` is Jenkins-only again, still not published on a host port itself
 
 ## [0.6.0] - 2026-07-21
 

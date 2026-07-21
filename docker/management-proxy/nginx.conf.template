@@ -1,0 +1,113 @@
+# A .template file, not a plain .conf - the official nginx image's
+# entrypoint runs envsubst over every file in /etc/nginx/templates/*.template
+# at container startup, writing the result to /etc/nginx/conf.d/. Only the
+# explicitly-set env vars below (JENKINS_DOMAIN etc.) get substituted;
+# nginx's own runtime variables ($host, $remote_addr, ...) are left alone
+# because they're never set as container environment variables.
+limit_req_zone $binary_remote_addr zone=mgmt_limit:10m rate=10r/s;
+
+# File-based logs for Fail2ban - see scripts/README.md.
+access_log /var/log/nginx-file/access.log;
+error_log  /var/log/nginx-file/error.log warn;
+
+server {
+    listen 80;
+    server_name _;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${JENKINS_DOMAIN};
+
+    ssl_certificate     /etc/nginx/certs/jenkins/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/jenkins/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=()" always;
+    # No Content-Security-Policy here - Jenkins sets its own CSP internally
+    # (needed for plugin UI compatibility); a proxy-level CSP would fight it.
+
+    location / {
+        limit_req zone=mgmt_limit burst=20 nodelay;
+        proxy_pass http://jenkins:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Jenkins' UI relies on long-lived connections for live updates.
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_read_timeout 90s;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${GRAFANA_DOMAIN};
+
+    ssl_certificate     /etc/nginx/certs/grafana/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/grafana/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=()" always;
+
+    location / {
+        limit_req zone=mgmt_limit burst=20 nodelay;
+        proxy_pass http://grafana:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Grafana Live uses websockets.
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${UPTIME_KUMA_DOMAIN};
+
+    ssl_certificate     /etc/nginx/certs/uptime-kuma/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/uptime-kuma/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=()" always;
+
+    location / {
+        limit_req zone=mgmt_limit burst=20 nodelay;
+        proxy_pass http://uptime-kuma:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Uptime Kuma's live dashboard uses websockets too.
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
