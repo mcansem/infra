@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-21
+
 ### Added
 
 - `docs/deployment.md`: real content, replacing the v0.1.0 stub — the general deploy flow, the `management`/`app`/`agent` role vocabulary, and links out to per-provider host provisioning
@@ -112,7 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue and pull request templates
 - README badges (license, lint status, release, Conventional Commits, Keep a Changelog)
 
-[Unreleased]: https://github.com/mcansem/infra/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/mcansem/infra/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/mcansem/infra/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mcansem/infra/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mcansem/infra/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mcansem/infra/compare/v0.4.0...v0.5.0
