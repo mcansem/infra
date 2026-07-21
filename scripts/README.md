@@ -1,6 +1,6 @@
 # scripts/
 
-Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`. Plus `validate-compose.sh`, a CI-focused check rather than something you'd run on a host.
+Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`. Plus `init-env.sh` (credential bootstrap) and `validate-compose.sh` (a CI-focused check rather than something you'd run on a host).
 
 Conventions (see [CONTRIBUTING.md](../CONTRIBUTING.md)):
 
@@ -52,6 +52,22 @@ fail2ban-client status    # all three jails should be listed and active
 ```
 
 Confirm your existing SSH session is still connected throughout — if it drops before you've verified `ufw status`, you have a firewall problem to fix immediately (console access, not another SSH attempt).
+
+## init-env.sh
+
+```bash
+scripts/init-env.sh <management|app|agent>
+```
+
+Creates the real `.env` files each role's stacks need, from their `.env.example` templates — run this on the target host, after cloning the repo there. Real credentials never touch git; `.env` files are gitignored everywhere, so a fresh `git clone`/`git pull` only ever brings in the dummy `.env.example` values. This script exists so filling in the real ones isn't a fully manual, error-prone process:
+
+- **Secrets** (`JENKINS_ADMIN_PASSWORD`, `POSTGRES_PASSWORD`, `GRAFANA_ADMIN_PASSWORD`) are generated automatically (`openssl rand -hex 24`) — never typed or guessed. Printed once in a summary at the end; save them immediately, they're not shown again and aren't written anywhere else.
+- **Derivable values** (`DOCKER_GID`) are auto-detected from the host (`getent group docker`), falling back to a placeholder with a warning if Docker isn't installed yet.
+- **Everything else** (domains, image tags, database names) is prompted for, with the `.env.example` value shown as the default — press Enter to accept it.
+- For `management`, `GRAFANA_DOMAIN` is asked once and written identically to both `docker/observability/.env` and `docker/management-proxy/.env` — those two must match (see the comment in `docker/observability/.env.example`), and filling them in separately by hand is exactly the kind of thing that's easy to get inconsistent.
+- Never overwrites an existing `.env` without an explicit confirmation prompt.
+
+You can still edit `.env` files by hand instead (copy `.env.example`, fill it in with an editor) — this script is a convenience, not a requirement; the underlying mechanism (a file that only ever exists locally on the host, never in git) is the same either way.
 
 ## backup.sh
 
