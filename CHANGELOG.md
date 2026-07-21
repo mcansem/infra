@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `docs/runbooks.md`: one playbook per Prometheus alert (`HostDown`, `DiskSpaceLow`, `ContainerMissing`) — what it means, likely causes, concrete investigate/fix commands
+- `docs/onboarding.md`: how a new application repo starts using this infrastructure — Jenkinsfile shape, image/port expectations, what to do if it doesn't fit the existing `docker/app/` service shape, new-subdomain certificate bootstrap
+- `docs/architecture.md`: real content replacing the v0.1.0 stub — three Mermaid diagrams (component/data-flow, externally-reachable network topology matching `scripts/harden-host.sh`'s `role_ports()`, CI/CD sequence matching `vars/standardDeployPipeline.groovy`'s stage order), rendered natively by GitHub
+- `docs/recovery.md`: real content replacing the v0.1.0 stub — the authoritative host-lost runbook (consolidating what was scattered across `backup.md`/`restore.md`/`platforms/homelab.md`), plus explicit RPO (~24h, tied to the recommended daily backup cadence) and RTO (an honest estimate — under two hours — explicitly caveated as untested, not a real SLA)
+
+### Changed
+
+- `docs/project-specification.md`'s Documentation section gains `runbooks.md`, `onboarding.md`
+
 ## [0.8.0] - 2026-07-21
 
 ### Added

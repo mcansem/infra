@@ -109,7 +109,7 @@ Renamed from "Platform Migration" — see [Revision History](#revision-history).
 
 The infrastructure itself must remain identical across providers.
 
-### v0.9.0 — Documentation (Planned)
+### v0.9.0 — Documentation (In Progress)
 
 Complete documentation set:
 
