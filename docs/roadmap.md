@@ -85,7 +85,7 @@ Renamed from "Oracle Deployment" — see [Revision History](#revision-history). 
 - Optional log rotation
 - Operational documentation
 
-### v0.7.0 — Observability (In Progress)
+### v0.7.0 — Observability (Released)
 
 - Uptime Kuma
 - Prometheus
