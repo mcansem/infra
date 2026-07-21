@@ -348,6 +348,8 @@ project-specification.md
 
 deployment.md
 
+platforms/ (AWS, Google Cloud, Oracle Cloud, Homelab guides)
+
 backup.md
 
 restore.md
