@@ -98,7 +98,7 @@ Renamed from "Oracle Deployment" — see [Revision History](#revision-history). 
 
 Covers both infrastructure metrics and external service availability.
 
-### v0.8.0 — Platform Integration (Planned)
+### v0.8.0 — Platform Integration (In Progress)
 
 Renamed from "Platform Migration" — see [Revision History](#revision-history). Documentation and deployment guidance, not infrastructure changes:
 

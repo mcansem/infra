@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `docs/deployment.md`: real content, replacing the v0.1.0 stub — the general deploy flow, the `management`/`app`/`agent` role vocabulary, and links out to per-provider host provisioning
+- `docs/platforms/aws.md`, `docs/platforms/google-cloud.md`, `docs/platforms/oracle-cloud.md`, `docs/platforms/homelab.md`: what's genuinely provider-specific (getting from nothing to a reachable Ubuntu host) for each target in the roadmap's deployment journey; everything past that point is identical across providers by design, so these docs deliberately don't re-describe it
+- `docs/platforms/homelab.md` is a migration guide (AWS → self-hosted), not a fresh-deploy guide — walks through `scripts/backup.sh`/`scripts/restore.sh` end to end as the actual migration mechanism
+
+### Changed
+
+- `docs/project-specification.md`'s Documentation section gains `platforms/`
+
 ## [0.7.0] - 2026-07-21
 
 ### Added
