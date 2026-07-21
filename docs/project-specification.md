@@ -356,6 +356,10 @@ restore.md
 
 recovery.md
 
+runbooks.md
+
+onboarding.md
+
 Directory structure should remain easy to navigate.
 
 ---
