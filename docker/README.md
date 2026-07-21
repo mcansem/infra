@@ -22,7 +22,7 @@ Docker management UI (Portainer CE), fulfilling the spec's requirement that one 
 
   Then, in the Portainer UI, add a new **Environment** pointing to `<remote-host-ip>:9001`.
 
-Two other stacks live alongside `portainer/` here: [`registry/`](registry/) (private Docker registry) and [`app/`](app/) (the staging/production application stack) — see their own READMEs.
+Other stacks live alongside `portainer/` here — see each folder's own README: [`registry/`](registry/) (private Docker registry), [`app/`](app/) (the staging/production application stack), [`monitoring-agent/`](monitoring-agent/) (Node Exporter + cAdvisor, every host), [`observability/`](observability/) (Prometheus, Alertmanager, Grafana, Uptime Kuma — `management` host), [`management-proxy/`](management-proxy/) (TLS + name-based routing for Jenkins/Grafana/Uptime Kuma, also `management` host).
 
 ## Conventions
 

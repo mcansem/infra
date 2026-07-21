@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # The management host's own exporters, reachable by container name since
+  # this container also joins monitoring_agent_net (see docker-compose.yml).
+  - job_name: node-exporter-management
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          host_role: management
+
+  - job_name: cadvisor-management
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          host_role: management
+
+  # Remote hosts (app/agent) - uncomment once their real IPs exist and the
+  # opt-in in docker/monitoring-agent/README.md has been done (rebind the
+  # exporter's port + a UFW rule scoped to *this* host's IP).
+  #
+  # - job_name: node-exporter-app
+  #   static_configs:
+  #     - targets: ["<app-host-ip>:9100"]
+  #       labels:
+  #         host_role: app
+  #
+  # - job_name: cadvisor-app
+  #   static_configs:
+  #     - targets: ["<app-host-ip>:8080"]
+  #       labels:
+  #         host_role: app
+  #
+  # - job_name: node-exporter-agent
+  #   static_configs:
+  #     - targets: ["<agent-host-ip>:9100"]
+  #       labels:
+  #         host_role: agent
