@@ -58,7 +58,11 @@ Disabling password authentication and root login is real hardening, but it is th
 
 ### Fail2ban jails
 
-Configured via [fail2ban/jail.local](fail2ban/jail.local): `sshd` (bundled filter, no changes needed), `nginx-limit-req` (bans IPs that repeatedly trip the rate limiting in `nginx/app.conf`/`jenkins/nginx.conf`), and `nginx-botsearch` (bundled scanner/bot-probe filter). Both nginx jails read from `/var/log/infra/<service>/`, which `docker/app/docker-compose.yml` and `jenkins/docker-compose.yml` bind-mount out of their `nginx` containers — see those files' `logs:` volumes. Create those host directories before first `docker compose up` (e.g. `sudo mkdir -p /var/log/infra/app-nginx /var/log/infra/jenkins-nginx`); if nginx fails to start with a log permission error, `chmod 777` on the directory is an acceptable pragmatic fix for log data.
+Configured via [fail2ban/jail.local](fail2ban/jail.local): `sshd` (bundled filter, no changes needed), `nginx-limit-req` (bans IPs that repeatedly trip the rate limiting in `nginx/app.conf`/`docker/management-proxy/nginx.conf.template`), and `nginx-botsearch` (bundled scanner/bot-probe filter). Both nginx jails read from `/var/log/infra/<service>/`, which `docker/app/docker-compose.yml` (app host) and `docker/management-proxy/docker-compose.yml` (management host) bind-mount out of their `nginx` containers — see those files' `logs:` volumes.
+
+`harden-host.sh` creates the right directory for the role automatically (`app-nginx` for `app`, `management-proxy` for `management`, nothing for `agent`) — and, critically, **pre-creates empty `access.log`/`error.log` files in it too**, not just the directory. `jail.local`'s `logpath` is a glob; if those files don't exist yet (nginx itself hasn't run a `docker compose up` at the point `harden-host.sh` runs), fail2ban silently fails to pick up the jail instead of erroring loudly. No manual step needed either way.
+
+If nginx fails to start with a log permission error, `chmod 777` on the directory is an acceptable pragmatic fix for log data.
 
 Not included: a custom Jenkins-login jail. No bundled Fail2ban filter exists for Jenkins' log format, and hand-writing one without a running Jenkins to test the regex against risks a filter that silently never matches. Left as a future addition.
 

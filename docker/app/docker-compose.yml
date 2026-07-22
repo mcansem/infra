@@ -40,7 +40,12 @@ services:
           cpus: "0.25"
           memory: 32M
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      # Same fix as docker/management-proxy/'s nginx healthcheck: port 80
+      # redirects to https://$host/, wget sends Host: localhost, no cert
+      # here has "localhost" in its SAN, so following the redirect fails
+      # TLS hostname verification even though nginx is healthy. Hit 443
+      # directly instead.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -39,7 +39,13 @@ services:
     healthcheck:
       # wget exit 0 = 2xx/3xx, exit 8 = server responded with an HTTP error
       # (e.g. 401 from the htpasswd auth) - both mean the service is up.
-      test: ["CMD-SHELL", "wget -qO- --no-check-certificate https://localhost:5000/v2/ >/dev/null 2>&1; test $? -eq 0 -o $? -eq 8"]
+      # Exit 6 added after a real deploy: this image's BusyBox wget doesn't
+      # follow GNU wget's documented exit-code table (where 6 specifically
+      # means "auth failure") - it returns 6 for a bare 401 with no
+      # credentials supplied, which is exactly what an unauthenticated
+      # request to this endpoint always gets. Confirmed still genuinely
+      # healthy via a real `docker login`/push/pull against this registry.
+      test: ["CMD-SHELL", "wget -qO- --no-check-certificate https://localhost:5000/v2/ >/dev/null 2>&1; test $? -eq 0 -o $? -eq 8 -o $? -eq 6"]
       interval: 30s
       timeout: 5s
       retries: 3

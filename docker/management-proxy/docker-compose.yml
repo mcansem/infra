@@ -41,7 +41,15 @@ services:
           cpus: "0.25"
           memory: 64M
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      # Not http://localhost/ - port 80 redirects to https://$host/ (real
+      # domain in production, but wget without --header sends Host:
+      # localhost), and no cert here has "localhost" in its SAN, so wget
+      # following that redirect fails TLS hostname verification even
+      # though nginx itself is completely healthy. Hit 443 directly
+      # instead, same --no-check-certificate pattern already used for
+      # registry's internal healthcheck - this container isn't validating
+      # a real domain, just confirming nginx answers.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3
