@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/validate-compose.sh`: runs `docker compose config` against every stack (and staging/production override combination), using each `.env.example` for dummy required-variable values — closes the "reviewed by eye only, no Docker on this machine" gap every phase before this one had to accept. Wired into CI as a new `compose-validate` job in `.github/workflows/lint.yml`, and runnable locally
 - `scripts/init-env.sh`: creates the real `.env` files a role's stacks need — generates secrets automatically (`openssl rand -hex 24`, never typed or guessed), auto-detects `DOCKER_GID`, prompts for everything else with the `.env.example` value as the default, and keeps `GRAFANA_DOMAIN` consistent between `docker/observability/.env` and `docker/management-proxy/.env` (asked once, written to both). Every stack's README now points to it as the recommended way to bootstrap `.env`, with manual editing documented as the (equivalent) alternative
 - A "Credentials" section in `docs/deployment.md` explaining why `.env` files are gitignored everywhere and how real values only ever exist locally, created after cloning — no secrets manager, nothing a credential could leak through except the host's own disk
+- Swap file provisioning in `scripts/harden-host.sh` (1G on `management`, 512M on `app`/`agent`) — a safety net against worst-case simultaneous memory peaks on the small free-tier instances this repo targets, idempotent and documented in `scripts/README.md`
+
+### Changed
+
+- Every stack's `deploy.resources.limits.memory`/`cpus` revised down to realistic usage: the previous values summed to roughly 2.5x the physical RAM of both the `management` (AWS `t3.small`, 2GB) and `app` (Google Cloud `e2-micro`, 1GB) target hosts. `jenkins` also gains an explicit `-XX:MaxRAMPercentage`/`-XX:MinRAMPercentage` so its JVM heap scales off the container's cgroup limit instead of assuming host RAM. `docs/platforms/aws.md`'s instance-sizing guidance updated to match (it still referenced pre-revision totals and recommended a larger instance than the actual free-tier host this repo targets)
 
 ## [0.9.0] - 2026-07-21
 

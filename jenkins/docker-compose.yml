@@ -29,7 +29,12 @@ services:
       - .env
     environment:
       CASC_JENKINS_CONFIG: /var/jenkins_home/casc.yaml
-      JAVA_OPTS: -Djenkins.install.runSetupWizard=false
+      # MaxRAMPercentage (not a fixed -Xmx) so the JVM heap scales
+      # automatically if the container memory limit below ever changes -
+      # the JVM reads the cgroup limit, not host RAM. 60% leaves room
+      # under the 768M cap for metaspace/threads/native buffers and the
+      # docker CLI subprocess pipeline stages shell out to.
+      JAVA_OPTS: -Djenkins.install.runSetupWizard=false -XX:MaxRAMPercentage=60.0 -XX:MinRAMPercentage=25.0
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
@@ -39,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 2G
+          cpus: "1.5"
+          memory: 768M
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
       interval: 30s

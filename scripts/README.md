@@ -12,7 +12,7 @@ Conventions (see [CONTRIBUTING.md](../CONTRIBUTING.md)):
 
 ## harden-host.sh
 
-Host-level (not Docker) production hardening: UFW firewall, Fail2ban, `unattended-upgrades`, and an opt-in SSH lockdown.
+Host-level (not Docker) production hardening: a swap file, UFW firewall, Fail2ban, `unattended-upgrades`, and an opt-in SSH lockdown.
 
 ```bash
 sudo scripts/harden-host.sh <management|app|agent> [--harden-ssh]
@@ -27,6 +27,10 @@ Different hosts in this repo's deployment run different stacks, so the firewall 
 | `management` | AWS EC2 | Portainer, Jenkins (+ its nginx), private Registry | 9443, 80, 443, 5000 |
 | `app` | Google Cloud VM | `docker/app/` stack | 80, 443 |
 | `agent` | any remote host Portainer manages | Portainer Agent only | 9001 |
+
+### Swap
+
+The `management` and `app` roles target small free-tier instances (AWS `t3.small` 2GB, Google Cloud `e2-micro` 1GB per [docs/roadmap.md](../docs/roadmap.md)). Each Docker stack's `deploy.resources.limits.memory` values are sized to realistic usage with headroom to spare under normal conditions, but a worst-case simultaneous peak across every container on a host can still exceed physical RAM. A swap file (1G on `management`, 512M on both `app` and `agent`) is the safety net for that case: it turns a hard, unpredictable OOM-kill (which could take out anything on the host, including `sshd`) into graceful, if slower, degradation. It is not a substitute for the memory limits themselves, and not a performance feature — swapping is expected to be rare, not routine. Created at `/swapfile`, persisted via `/etc/fstab`, idempotent (skips if already active, re-enables if present but inactive).
 
 ### Safety: SSH first, always
 

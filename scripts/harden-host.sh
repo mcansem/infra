@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Host-level production hardening: UFW firewall, Fail2ban, unattended
-# security upgrades, and (opt-in only) SSH lockdown.
+# security upgrades, a swap file, and (opt-in only) SSH lockdown.
 #
 # Usage:
 #   sudo scripts/harden-host.sh <management|app|agent> [--harden-ssh]
@@ -10,6 +10,12 @@
 #   management  - Portainer + Jenkins (+ its nginx) + private Registry host
 #   app         - the docker/app/ staging/production stack host
 #   agent       - a host running only the Portainer Agent
+#
+# Swap: the management/app roles target small free-tier instances (see
+# docs/roadmap.md) where container memory limits, summed, run close to or
+# above physical RAM by design - a safety net against worst-case
+# simultaneous peaks, not a substitute for right-sized limits. See
+# scripts/README.md.
 #
 # Idempotent: safe to re-run. UFW rules and enable are no-ops if already
 # applied; fail2ban config is simply overwritten with the same content;
@@ -54,6 +60,15 @@ role_ports() {
   esac
 }
 
+swap_size_mb() {
+  case "$1" in
+    management) echo 1024 ;;
+    app)        echo 512 ;;
+    agent)      echo 512 ;;
+    *)          echo 512 ;;
+  esac
+}
+
 configure_ufw() {
   local role="$1"
   local ssh_port
@@ -81,6 +96,36 @@ configure_ufw() {
 
   log_success "UFW configured:"
   ufw status verbose
+}
+
+configure_swap() {
+  local role="$1"
+  local size_mb
+  size_mb="$(swap_size_mb "$role")"
+
+  if swapon --show=NAME --noheadings 2>/dev/null | grep -q '^/swapfile$'; then
+    log_info "Swap already active at /swapfile, skipping."
+    return
+  fi
+
+  if [[ -f /swapfile ]]; then
+    log_warning "/swapfile exists but isn't active - enabling it."
+    swapon /swapfile
+    return
+  fi
+
+  log_info "Creating ${size_mb}M swap file at /swapfile..."
+  fallocate -l "${size_mb}M" /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count="$size_mb" status=none
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+  swapon /swapfile
+
+  if ! grep -q '^/swapfile' /etc/fstab; then
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  fi
+
+  log_success "Swap enabled:"
+  swapon --show
 }
 
 configure_fail2ban() {
@@ -161,6 +206,7 @@ main() {
   apt-get update -y
   apt-get install -y ufw fail2ban unattended-upgrades
 
+  configure_swap "$role"
   configure_ufw "$role"
   configure_fail2ban
   configure_unattended_upgrades

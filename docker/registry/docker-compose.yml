@@ -34,8 +34,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 192M
     healthcheck:
       # wget exit 0 = 2xx/3xx, exit 8 = server responded with an HTTP error
       # (e.g. 401 from the htpasswd auth) - both mean the service is up.
