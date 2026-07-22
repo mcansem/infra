@@ -20,7 +20,7 @@ Assumes the AWS `management` host (see [aws.md](aws.md)) is already up and runni
 
 2. **Copy the backup to the homelab host** — `rsync`/`scp`, whatever's reachable given the tunnel setup from the prerequisite step.
 
-3. **Harden the homelab host:**
+3. **Harden the homelab host** — if it's a fresh Ubuntu install with nothing on it yet, `scripts/bootstrap.sh` gets `git`/Docker installed and this repo cloned first (see [docs/deployment.md](../deployment.md#getting-a-host-ready-in-the-first-place)):
 
    ```bash
    git clone <this-repo-url> infra && cd infra
