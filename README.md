@@ -34,6 +34,10 @@ Infrastructure defined here must remain reusable regardless of which application
 
 See [docs/roadmap.md](docs/roadmap.md) for the full phase-by-phase roadmap, current status of each phase, the deployment journey (short/long term), and the history of roadmap revisions.
 
+## Getting Started
+
+Starting from a completely fresh Ubuntu host? `scripts/bootstrap.sh` installs `git` and Docker, then clones this repo — see [docs/deployment.md](docs/deployment.md#getting-a-host-ready-in-the-first-place) for the full walkthrough (including why it's worth reading a root-run script before piping it into `bash`).
+
 ## Repository Structure
 
 ```text

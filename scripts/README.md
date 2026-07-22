@@ -1,6 +1,6 @@
 # scripts/
 
-Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`. Plus `init-env.sh` (credential bootstrap) and `validate-compose.sh` (a CI-focused check rather than something you'd run on a host).
+Parameter-driven Bash automation for host hardening (v0.5.0) and day-to-day operations (v0.6.0): `harden-host.sh`, `backup.sh`, `restore.sh`, `update.sh`, `cleanup.sh`, `deploy.sh`. Plus `bootstrap.sh` (pre-hardening host setup), `init-env.sh` (credential bootstrap), and `validate-compose.sh` (a CI-focused check rather than something you'd run on a host).
 
 Conventions (see [CONTRIBUTING.md](../CONTRIBUTING.md)):
 
@@ -9,6 +9,22 @@ Conventions (see [CONTRIBUTING.md](../CONTRIBUTING.md)):
 - Idempotent and safe to re-run
 - Functions over duplicated logic
 - Colored, leveled logging (`INFO`, `SUCCESS`, `WARNING`, `ERROR`)
+
+## bootstrap.sh
+
+The step before every other script in this directory can run: on a completely fresh Ubuntu host with nothing installed, installs `git` and Docker Engine (+ Compose plugin) from Docker's official apt repo, adds the invoking (`sudo`) user to the `docker` group, and clones this repo. Deliberately stops there — it does not chain into `harden-host.sh`, since picking a role is a decision this script shouldn't make for you.
+
+```bash
+sudo scripts/bootstrap.sh
+# or, to clone a fork/mirror:
+sudo REPO_URL=https://github.com/you/infra.git scripts/bootstrap.sh
+```
+
+Docker's version is intentionally **not pinned** — installed via `apt-get install docker-ce ...` with whatever's current in Docker's apt repo, same as the one existing precedent for installing Docker packages in this repo (`jenkins/Dockerfile`). This repo pins container image tags for stack reproducibility; the host's Docker Engine itself is treated like any other OS package, same reasoning as `unattended-upgrades` below being left unpinned. The installed version is always logged at `SUCCESS` level, so it's the first thing you'd check if a version-specific issue ever came up.
+
+After it finishes: `usermod -aG docker` only takes effect in a new session — log out and back in, or run `newgrp docker`, before using `docker` without `sudo`.
+
+Idempotent: skips the Docker install entirely if `docker` is already on `PATH`; refuses to overwrite an existing clone directory rather than clobbering it.
 
 ## harden-host.sh
 

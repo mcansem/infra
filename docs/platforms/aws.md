@@ -12,6 +12,8 @@ Runs Portainer, Jenkins, the private Docker Registry, and the observability stac
 
 ## From here, it's the same as every other host
 
+Nothing installed yet (no `git`, no Docker)? `scripts/bootstrap.sh` gets a fresh Ubuntu host to this point — see [docs/deployment.md](../deployment.md#getting-a-host-ready-in-the-first-place) for the download-and-read-first version.
+
 ```bash
 git clone <this-repo-url> infra && cd infra
 sudo scripts/harden-host.sh management

@@ -32,7 +32,24 @@ The steps above assume a reachable Ubuntu host with SSH access already exists. G
 - [platforms/oracle-cloud.md](platforms/oracle-cloud.md) — the `app` host (production target)
 - [platforms/homelab.md](platforms/homelab.md) — migrating Jenkins off AWS long-term
 
-Once a host is reachable, every provider converges on the same next steps: `scripts/harden-host.sh <role>`, then each relevant stack's own README (`docker/portainer/`, `jenkins/`, `docker/registry/`, `docker/observability/`, `docker/management-proxy/` for `management`; `docker/app/` for `app`; `docker/portainer/agent-compose.yml` for `agent`) — the infrastructure itself never changes based on where it's running.
+Once a host is reachable, every provider converges on the same next steps. If it's a completely fresh Ubuntu install with nothing on it yet — no `git`, no Docker — `scripts/bootstrap.sh` gets it to the point every other script assumes (see [scripts/README.md](../scripts/README.md#bootstrapsh)):
+
+```bash
+# Download and read it first - it runs as root, that's worth seeing before it runs.
+curl -fsSL https://raw.githubusercontent.com/mcansem/infra/main/scripts/bootstrap.sh -o bootstrap.sh
+less bootstrap.sh
+sudo bash bootstrap.sh
+```
+
+A one-line `curl ... | sudo bash` works too and is common practice for this kind of installer (Docker's own `get.docker.com` does the same), but skips the "see what's about to run as root" step above — a real tradeoff, not a purely cosmetic one, worth making consciously rather than by default:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mcansem/infra/main/scripts/bootstrap.sh | sudo bash
+```
+
+Either way, prefer pointing the URL at a release tag instead of `main` once one exists (`.../v1.0.0/scripts/bootstrap.sh`) — predictable over whatever `main` happens to be that day.
+
+From there: `scripts/harden-host.sh <role>`, then each relevant stack's own README (`docker/portainer/`, `jenkins/`, `docker/registry/`, `docker/observability/`, `docker/management-proxy/` for `management`; `docker/app/` for `app`; `docker/portainer/agent-compose.yml` for `agent`) — the infrastructure itself never changes based on where it's running.
 
 ## Credentials
 
