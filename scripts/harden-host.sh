@@ -69,6 +69,15 @@ swap_size_mb() {
   esac
 }
 
+nginx_log_dir() {
+  case "$1" in
+    management) echo "management-proxy" ;;
+    app)        echo "app-nginx" ;;
+    agent)      echo "" ;;
+    *)          echo "" ;;
+  esac
+}
+
 configure_ufw() {
   local role="$1"
   local ssh_port
@@ -126,6 +135,30 @@ configure_swap() {
 
   log_success "Swap enabled:"
   swapon --show
+}
+
+configure_nginx_log_dirs() {
+  local role="$1"
+  local dir
+  dir="$(nginx_log_dir "$role")"
+
+  if [[ -z "$dir" ]]; then
+    log_info "Role '${role}' has no nginx of its own, skipping log directory setup."
+    return
+  fi
+
+  local host_dir="/var/log/infra/${dir}"
+  # fail2ban's jail.local logpath is a glob (/var/log/infra/*/{access,error}.log)
+  # - if the files don't exist yet when fail2ban starts (nginx itself hasn't
+  # run a single `docker compose up` yet at this point in the flow), the
+  # jail silently fails to pick them up. Create them empty now so fail2ban
+  # always has something to watch from the start; nginx's bind mount just
+  # writes into the same files once it's up.
+  log_info "Ensuring nginx log directory exists: ${host_dir}"
+  mkdir -p "$host_dir"
+  touch "${host_dir}/access.log" "${host_dir}/error.log"
+
+  log_success "${host_dir} ready (access.log, error.log)."
 }
 
 configure_fail2ban() {
@@ -208,6 +241,7 @@ main() {
 
   configure_swap "$role"
   configure_ufw "$role"
+  configure_nginx_log_dirs "$role"
   configure_fail2ban
   configure_unattended_upgrades
 

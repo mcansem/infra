@@ -50,10 +50,16 @@ mkdir -p "${OUT_DIR}"
 
 if [[ "${MODE}" == "self-signed" ]]; then
   log_info "Generating self-signed certificate for ${DOMAIN} (${SERVICE_NAME})"
+  # -addext subjectAltName is required, not optional: Go's TLS client (which
+  # includes the Docker daemon and CLI) has rejected CN-only certificates
+  # since Go 1.15 ("x509: certificate relies on legacy Common Name field").
+  # Without a SAN, every self-signed cert here fails any Docker-to-Docker
+  # TLS handshake (e.g. `docker login`/push/pull against the registry).
   openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
     -keyout "${OUT_DIR}/privkey.pem" \
     -out "${OUT_DIR}/fullchain.pem" \
-    -subj "/CN=${DOMAIN}"
+    -subj "/CN=${DOMAIN}" \
+    -addext "subjectAltName=DNS:${DOMAIN}"
   log_success "Self-signed certificate written to ${OUT_DIR}/"
   exit 0
 fi

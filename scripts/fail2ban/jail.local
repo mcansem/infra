@@ -7,7 +7,7 @@ maxretry = 5
 enabled = true
 
 # Bans IPs that repeatedly trip the `limit_req` rate limiting configured in
-# nginx/app.conf and jenkins/nginx.conf.
+# nginx/app.conf and docker/management-proxy/nginx.conf.template.
 [nginx-limit-req]
 enabled = true
 port = http,https
