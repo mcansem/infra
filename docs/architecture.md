@@ -5,7 +5,7 @@
 Two host roles carry the whole system (a third, `agent`, exists only for future Portainer-managed nodes with no services of their own — see [docs/roadmap.md](roadmap.md)'s Deployment Journey):
 
 - **`management`** — Jenkins (CI/CD), Portainer (Docker management), a private Docker Registry, and the observability stack (Prometheus, Alertmanager, Grafana, Uptime Kuma), all fronted by a single shared reverse proxy.
-- **`app`** — the actual application stack: Nginx → Next.js / .NET API → PostgreSQL.
+- **`app`** — the actual application stack: Nginx → `app` (a single container — Next.js static export served by the .NET API's own process) → PostgreSQL.
 
 The two communicate through exactly one channel by design: the `app` host pulls images that Jenkins (on `management`) built and pushed to the Registry. Nothing else crosses the host boundary except, optionally, Prometheus scraping the `app` host's metrics exporters (see [docker/monitoring-agent/README.md](../docker/monitoring-agent/README.md) — off by default, a documented opt-in).
 
@@ -30,24 +30,21 @@ graph TB
 
     subgraph app["app host"]
         AppNginx["nginx"]
-        NextJS["Next.js"]
-        DotnetAPI[".NET API"]
+        App["app (Next.js export + .NET API)"]
         Postgres[("PostgreSQL")]
     end
 
     Repo -- webhook --> Jenkins
     Jenkins -- docker push --> Registry
     Jenkins -. "SSH deploy" .-> AppNginx
-    Registry -. "docker pull" .-> NextJS
-    Registry -. "docker pull" .-> DotnetAPI
+    Registry -. "docker pull" .-> App
     MgmtProxy --> Jenkins
     MgmtProxy --> Grafana
     MgmtProxy --> Uptime
     Grafana --> Prom
     Prom --> Alert
-    AppNginx --> NextJS
-    AppNginx --> DotnetAPI
-    DotnetAPI --> Postgres
+    AppNginx --> App
+    App --> Postgres
 ```
 
 ## Network topology (externally reachable ports)

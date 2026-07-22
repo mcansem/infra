@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Every stack's `deploy.resources.limits.memory`/`cpus` revised down to realistic usage: the previous values summed to roughly 2.5x the physical RAM of both the `management` (AWS `t3.small`, 2GB) and `app` (Google Cloud `e2-micro`, 1GB) target hosts. `jenkins` also gains an explicit `-XX:MaxRAMPercentage`/`-XX:MinRAMPercentage` so its JVM heap scales off the container's cgroup limit instead of assuming host RAM. `docs/platforms/aws.md`'s instance-sizing guidance updated to match (it still referenced pre-revision totals and recommended a larger instance than the actual free-tier host this repo targets)
+- `docker/app/`'s `nextjs` and `dotnet-api` services collapsed into a single `app` service/image: the real application is a 3-stage Dockerfile (Next.js static export → .NET publish → export copied into the API's `wwwroot`), one ASP.NET Core process serving both, not two containers. `nginx/app.conf` now proxies everything to one upstream instead of splitting `/api/` from the rest. `docker/app/.env.example`'s `WEB_IMAGE_TAG`/`API_IMAGE_TAG` replaced with a single `APP_IMAGE_NAME` (required, no default — this repo isn't tied to one project's naming) and `APP_IMAGE_TAG`; `scripts/init-env.sh` and every affected doc (`docker/app/README.md`, `nginx/README.md`, `docs/architecture.md`, `docs/onboarding.md`, `docs/platforms/google-cloud.md`, `docs/platforms/oracle-cloud.md`) updated to match
 
 ## [0.9.0] - 2026-07-21
 

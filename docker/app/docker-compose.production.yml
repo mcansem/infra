@@ -1,9 +1,7 @@
 services:
   nginx:
     restart: always
-  nextjs:
-    restart: always
-  dotnet-api:
+  app:
     restart: always
   # Same bounded-retry reasoning as staging (see docker-compose.staging.yml) -
   # postgres never gets an unbounded restart loop.

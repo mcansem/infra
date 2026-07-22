@@ -89,7 +89,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
       GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN:?GRAFANA_DOMAIN is required}
     # No published port - reached through docker/management-proxy/ over
-    # this network, same pattern as docker/app/'s nextjs/dotnet-api.
+    # this network, same pattern as docker/app/'s app service.
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana_data:/var/lib/grafana
