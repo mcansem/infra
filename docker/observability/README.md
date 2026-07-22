@@ -17,7 +17,7 @@ Compose can't express dependencies across separate compose projects, so order ma
 
 ## Bootstrap
 
-1. Copy `.env.example` to `.env` and fill in `GRAFANA_ADMIN_PASSWORD` / `GRAFANA_DOMAIN` (the latter must match `docker/management-proxy/.env`'s `GRAFANA_DOMAIN`).
+1. Create `.env` — `../../scripts/init-env.sh management` (see [scripts/README.md](../../scripts/README.md#init-envsh)) handles this file and `docker/management-proxy/.env` together, generating `GRAFANA_ADMIN_PASSWORD` and asking for `GRAFANA_DOMAIN` once so both files stay consistent. Or copy `.env.example` to `.env` by hand — just make sure `GRAFANA_DOMAIN` here matches `docker/management-proxy/.env`'s `GRAFANA_DOMAIN` exactly.
 
 2. Start it (after steps 1–2 above):
 

@@ -34,4 +34,10 @@ The steps above assume a reachable Ubuntu host with SSH access already exists. G
 
 Once a host is reachable, every provider converges on the same next steps: `scripts/harden-host.sh <role>`, then each relevant stack's own README (`docker/portainer/`, `jenkins/`, `docker/registry/`, `docker/observability/`, `docker/management-proxy/` for `management`; `docker/app/` for `app`; `docker/portainer/agent-compose.yml` for `agent`) — the infrastructure itself never changes based on where it's running.
 
+## Credentials
+
+`.env` files are gitignored everywhere in this repo — real credentials never touch git, ever. A `git clone`/`git pull` on any host only ever brings in the dummy `.env.example` values; the real `.env` files exist only locally, on whatever host they were created on, created **after** cloning, by whoever is setting that host up. This is deliberate: no secrets manager, no CI secret store, nothing a credential could leak through except the host's own disk — the smallest possible attack surface for a small, self-hosted setup.
+
+Use `scripts/init-env.sh <role>` to create them (see [scripts/README.md](../scripts/README.md#init-envsh)): it generates passwords automatically, auto-detects what it can, and prompts for the rest — or copy each stack's `.env.example` to `.env` and fill it in with an editor, same outcome either way.
+
 See [docs/roadmap.md](roadmap.md) for the current high-level roadmap.

@@ -8,7 +8,7 @@ Only one process can bind a host's port 80/443. Once Grafana and Uptime Kuma nee
 
 ## Bootstrap
 
-1. Copy `.env.example` to `.env` — the three `*_DOMAIN` values here must match the ones in `jenkins/.env` (implicitly, via DNS) and `docker/observability/.env`'s `GRAFANA_DOMAIN`.
+1. Create `.env` — `../../scripts/init-env.sh management` (see [scripts/README.md](../../scripts/README.md#init-envsh)) handles this file together with `jenkins/.env` and `docker/observability/.env`, keeping `GRAFANA_DOMAIN` consistent with `docker/observability/.env` automatically. Or copy `.env.example` to `.env` by hand: `JENKINS_DOMAIN` and `UPTIME_KUMA_DOMAIN` just need real DNS records pointing at this host; `GRAFANA_DOMAIN` must match `docker/observability/.env`'s `GRAFANA_DOMAIN` exactly.
 
 2. Bootstrap certificates for all three domains (self-signed first, same pattern as every other TLS service in this repo — see [ssl/README.md](../../ssl/README.md)):
 

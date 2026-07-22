@@ -4,7 +4,7 @@ Dockerized Jenkins server, configured entirely as code (JCasC) — no manual cli
 
 ## Deploy
 
-1. Copy `.env.example` to `.env` and fill in real values:
+1. Create `.env` — run `../scripts/init-env.sh management` (see [scripts/README.md](../scripts/README.md#init-envsh)) to generate `JENKINS_ADMIN_PASSWORD` and auto-detect `DOCKER_GID`, or copy `.env.example` to `.env` by hand and fill it in yourself:
    - `JENKINS_ADMIN_USER` / `JENKINS_ADMIN_PASSWORD` — the initial admin login (JCasC creates this user, no setup wizard)
    - `DOCKER_GID` — the host's `docker` group GID, so the `jenkins` user inside the container can use the mounted `docker.sock`. Get it with:
 
