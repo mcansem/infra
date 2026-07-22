@@ -1,5 +1,9 @@
 name: monitoring-agent
 
+# Resource limits below are sized for the tightest host this stack runs on
+# (the app role's 1GB free-tier VM), since it's the same compose file on
+# every role - see docs/roadmap.md for per-role instance sizes.
+
 networks:
   monitoring_agent_net:
     name: monitoring_agent_net
@@ -34,8 +38,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: 128M
+          cpus: "0.1"
+          memory: 32M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
       interval: 30s
@@ -65,8 +69,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 256M
+          cpus: "0.25"
+          memory: 96M
     # No compose-level healthcheck: cAdvisor's image tooling (shell/wget
     # availability) has changed across versions and isn't reliably
     # confirmed for this pin, so this intentionally defers to whatever

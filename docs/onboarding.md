@@ -1,6 +1,6 @@
 # Onboarding a New Application Repo
 
-How an application repository (`portfolio/` in the running example throughout [project-specification.md](project-specification.md)'s Main Philosophy — Next.js + .NET) starts using this infrastructure. Application code and infrastructure code stay in separate repos by design; this is the contract between them.
+How an application repository (`portfolio/` in the running example throughout [project-specification.md](project-specification.md)'s Main Philosophy — a Next.js static export served by a .NET Minimal API, one image) starts using this infrastructure. Application code and infrastructure code stay in separate repos by design; this is the contract between them.
 
 ## What the app repo needs
 
@@ -17,15 +17,15 @@ How an application repository (`portfolio/` in the running example throughout [p
    )
    ```
 
-2. **A Dockerfile that builds a working image** — this repo's Jenkins builds it (`Docker Build & Push` stage), but the Dockerfile itself lives in the app repo. It needs to produce an image that:
-   - Listens on a predictable port (the existing `docker/app/docker-compose.yml` assumes `3000` for the web service, `8080` for the API — matching those avoids compose changes; a different port just means updating that file).
-   - Exposes a health endpoint `docker/app/`'s healthchecks can hit (`/` for the web service is fine; `/health` for the API — again, matching existing assumptions avoids a compose change).
+2. **A Dockerfile that builds a working image** — this repo's Jenkins builds it (`Docker Build & Push` stage), but the Dockerfile itself lives in the app repo. `portfolio/`'s is a 3-stage build: Next.js static export → .NET publish → the export copied into the API's `wwwroot`, packaged in an ASP.NET runtime image — one process serves both frontend and API, one image to push. It needs to:
+   - Listen on a predictable port (the existing `docker/app/docker-compose.yml` assumes `8080` — matching it avoids a compose change; a different port just means updating that file).
+   - Expose a health endpoint `docker/app/`'s healthcheck can hit (`/health` — again, matching the existing assumption avoids a compose change).
 3. **A GitHub webhook** pointed at `https://jenkins.<domain>/github-webhook/`, per [jenkins/README.md](../jenkins/README.md).
 4. **Registry credentials** — the app repo doesn't need its own; Jenkins already holds `registry-credentials` (see [jenkins/README.md](../jenkins/README.md)) and injects them via the shared library's `Docker Build & Push` stage.
 
 ## If the app doesn't fit the existing shape
 
-`docker/app/docker-compose.yml` currently assumes exactly one web service (`nextjs`) and one API service (`dotnet-api`) sharing one Postgres database. A genuinely different application (a different language/framework, an additional service, no database) means editing that compose file directly — add a service following the same conventions every other service in this repo follows (healthcheck, `stop_grace_period`, resource limits, `restart` per the stateless/stateful split in [docker/app/README.md](../docker/app/README.md#environments), pinned image tag pulled from the private registry, no published port unless it needs to be reached directly by `nginx/app.conf`). This is an infrastructure change, not an application-repo change — it belongs in a PR against this repo, following the same phase-by-phase workflow every other change here has used.
+`docker/app/docker-compose.yml` currently assumes exactly one app service (`app`, serving both frontend and API from a single image) and one Postgres database. A genuinely different application (a different language/framework, a real split between frontend and API processes, an additional service, no database) means editing that compose file directly — add a service following the same conventions every other service in this repo follows (healthcheck, `stop_grace_period`, resource limits, `restart` per the stateless/stateful split in [docker/app/README.md](../docker/app/README.md#environments), pinned image tag pulled from the private registry, no published port unless it needs to be reached directly by `nginx/app.conf`). This is an infrastructure change, not an application-repo change — it belongs in a PR against this repo, following the same phase-by-phase workflow every other change here has used.
 
 ## New subdomain, new certificate
 

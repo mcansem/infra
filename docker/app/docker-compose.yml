@@ -18,9 +18,7 @@ services:
     security_opt:
       - no-new-privileges:true
     depends_on:
-      nextjs:
-        condition: service_healthy
-      dotnet-api:
+      app:
         condition: service_healthy
     ports:
       - "80:80"
@@ -39,8 +37,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 128M
+          cpus: "0.25"
+          memory: 32M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
@@ -66,8 +64,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1G
+          cpus: "0.5"
+          memory: 200M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -75,32 +73,13 @@ services:
       retries: 5
       start_period: 10s
 
-  nextjs:
-    image: ${REGISTRY_URL:?REGISTRY_URL is required}/portfolio-web:${WEB_IMAGE_TAG:-latest}
-    container_name: app-nextjs
-    restart: unless-stopped
-    stop_grace_period: 15s
-    security_opt:
-      - no-new-privileges:true
-    environment:
-      NODE_ENV: production
-    networks:
-      - app_net
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
-
-  dotnet-api:
-    image: ${REGISTRY_URL:?REGISTRY_URL is required}/portfolio-api:${API_IMAGE_TAG:-latest}
-    container_name: app-dotnet-api
+  # Single image: a 3-stage Dockerfile in the app repo builds the Next.js
+  # static export, publishes the .NET API, then copies the export into the
+  # API's wwwroot - one ASP.NET Core process serves both. No separate
+  # Next.js/Node runtime on this host.
+  app:
+    image: ${REGISTRY_URL:?REGISTRY_URL is required}/${APP_IMAGE_NAME:?APP_IMAGE_NAME is required}:${APP_IMAGE_TAG:-latest}
+    container_name: app
     restart: unless-stopped
     stop_grace_period: 20s
     security_opt:
@@ -116,8 +95,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 256M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s

@@ -105,11 +105,11 @@ init_app_env() {
     return
   fi
 
-  local domain registry_url web_tag api_tag pg_db pg_user pg_password
+  local domain registry_url image_name image_tag pg_db pg_user pg_password
   domain="$(prompt DOMAIN_NAME app.example.com 'App public domain')"
   registry_url="$(prompt REGISTRY_URL registry.example.com:5000 'Private registry URL (host:port)')"
-  web_tag="$(prompt WEB_IMAGE_TAG latest 'Web image tag')"
-  api_tag="$(prompt API_IMAGE_TAG latest 'API image tag')"
+  image_name="$(prompt APP_IMAGE_NAME your-app-name 'App image name (in the private registry)')"
+  image_tag="$(prompt APP_IMAGE_TAG latest 'App image tag')"
   pg_db="$(prompt POSTGRES_DB app 'Postgres database name')"
   pg_user="$(prompt POSTGRES_USER app 'Postgres user')"
   pg_password="$(generate_secret)"
@@ -117,8 +117,8 @@ init_app_env() {
   write_env "$env_file" \
     "DOMAIN_NAME=${domain}" \
     "REGISTRY_URL=${registry_url}" \
-    "WEB_IMAGE_TAG=${web_tag}" \
-    "API_IMAGE_TAG=${api_tag}" \
+    "APP_IMAGE_NAME=${image_name}" \
+    "APP_IMAGE_TAG=${image_tag}" \
     "POSTGRES_DB=${pg_db}" \
     "POSTGRES_USER=${pg_user}" \
     "POSTGRES_PASSWORD=${pg_password}"
