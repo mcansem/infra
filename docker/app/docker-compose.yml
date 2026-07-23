@@ -44,8 +44,13 @@ services:
       # redirects to https://$host/, wget sends Host: localhost, no cert
       # here has "localhost" in its SAN, so following the redirect fails
       # TLS hostname verification even though nginx is healthy. Hit 443
-      # directly instead.
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost/"]
+      # directly instead - and 127.0.0.1, not localhost, since "localhost"
+      # resolves to ::1 first in this image and nginx ends up IPv4-only
+      # despite the base image's IPv6-listen entrypoint script (see
+      # docker/management-proxy/docker-compose.yml for the full reason:
+      # envsubst-on-templates regenerates the config after that script
+      # patches it, silently dropping the IPv6 listen directive again).
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://127.0.0.1/"]
       interval: 30s
       timeout: 5s
       retries: 3
