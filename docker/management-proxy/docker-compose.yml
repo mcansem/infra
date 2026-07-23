@@ -49,7 +49,25 @@ services:
       # instead, same --no-check-certificate pattern already used for
       # registry's internal healthcheck - this container isn't validating
       # a real domain, just confirming nginx answers.
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost/"]
+      #
+      # Not https://localhost/ either - confirmed live that "localhost"
+      # resolves to ::1 first inside this container, and nginx ends up
+      # IPv4-only despite the base image's 10-listen-on-ipv6-by-default.sh:
+      # that script patches conf.d/default.conf, but 20-envsubst-on-
+      # templates.sh runs after it and regenerates that same file fresh
+      # from nginx.conf.template, silently discarding the IPv6 listen
+      # directive it added. Real external traffic is unaffected (Docker's
+      # port-publish NAT maps both 0.0.0.0/[::] host ports down to the
+      # container's one IPv4 address regardless) - this is purely a
+      # loopback-resolution quirk of the healthcheck itself. 127.0.0.1
+      # sidesteps it entirely.
+      #
+      # Also relies on nginx.conf.template's default_server block - without
+      # a Host/SNI match, nginx used to fall back to the first named vhost
+      # (Jenkins) and get a 403 from Jenkins' own reverse-proxy Host-header
+      # validation. The default_server block answers 200 directly instead,
+      # with no backend involved at all. See that file for the full comment.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://127.0.0.1/"]
       interval: 30s
       timeout: 5s
       retries: 3

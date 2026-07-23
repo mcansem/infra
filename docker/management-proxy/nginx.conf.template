@@ -24,6 +24,30 @@ server {
 }
 
 server {
+    # Catches any TLS request whose SNI/Host doesn't match one of the three
+    # named vhosts below - notably the container's own healthcheck, which
+    # connects via 127.0.0.1 with no real domain. Without this block, nginx
+    # falls back to the first server{} listening on 443 (Jenkins), which
+    # then rejects the request with its own 403 (Jenkins validates the Host
+    # header it's proxied as a reverse-proxy anti-spoofing measure) - a
+    # false "unhealthy" even though nginx itself is fine. Real traffic
+    # never hits this: it always carries a real jenkins/grafana/uptime
+    # Host header. Reuses Jenkins' cert purely so the TLS handshake has
+    # something to present; content is irrelevant since nothing real ever
+    # resolves to this block, and the healthcheck skips cert validation.
+    listen 443 ssl default_server;
+    server_name _;
+
+    ssl_certificate     /etc/nginx/certs/jenkins/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/jenkins/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        return 200;
+    }
+}
+
+server {
     listen 443 ssl;
     server_name ${JENKINS_DOMAIN};
 
