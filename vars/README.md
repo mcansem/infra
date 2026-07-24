@@ -6,7 +6,7 @@ It lives at the repository root — not under `jenkins/` — because Jenkins' `m
 
 ## Usage
 
-An application repo (e.g. `portfolio/`) consumes this library with a minimal `Jenkinsfile`:
+A single-image application repo consumes this library with a minimal `Jenkinsfile`:
 
 ```groovy
 @Library('infra-shared-library') _
@@ -14,9 +14,23 @@ An application repo (e.g. `portfolio/`) consumes this library with a minimal `Je
 standardDeployPipeline(
     targetEnv: 'staging',
     targetHost: 'staging.example.com',
-    imageName: 'portfolio-app',
+    imageName: 'my-app',
     registryUrl: 'https://registry.example.com:5000'
 )
 ```
 
-See [standardDeployPipeline.groovy](standardDeployPipeline.groovy) for the full parameter list and pipeline stages.
+An app that builds more than one image from the same repo (e.g. `portfolio/` — a Next.js frontend and a .NET API, each with their own Dockerfile) uses `images` instead of `imageName`:
+
+```groovy
+standardDeployPipeline(
+    targetEnv: 'staging',
+    targetHost: 'staging.example.com',
+    images: [
+        [name: 'portfolio-web', context: 'frontend'],
+        [name: 'portfolio-app', context: 'backend'],
+    ],
+    registryUrl: 'https://registry.example.com:5000'
+)
+```
+
+See [standardDeployPipeline.groovy](standardDeployPipeline.groovy) for the full parameter list (including per-image `dockerfile`/`buildArgs`) and pipeline stages.

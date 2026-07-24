@@ -20,6 +20,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
+      web:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -83,10 +85,13 @@ services:
       retries: 5
       start_period: 10s
 
-  # Single image: a 3-stage Dockerfile in the app repo builds the Next.js
-  # static export, publishes the .NET API, then copies the export into the
-  # API's wwwroot - one ASP.NET Core process serves both. No separate
-  # Next.js/Node runtime on this host.
+  # Two images again, not one: the frontend moved from a build-time static
+  # export to ISR (Incremental Static Regeneration), which needs a
+  # persistent Next.js Node process to serve revalidation - it can no
+  # longer be baked into the API's wwwroot at build time and shipped in
+  # the same image/process. See CHANGELOG.md for the full reasoning this
+  # reverses (content freshness: static export meant every content edit
+  # needed a full CI/CD cycle to appear).
   app:
     image: ${REGISTRY_URL:?REGISTRY_URL is required}/${APP_IMAGE_NAME:?APP_IMAGE_NAME is required}:${APP_IMAGE_TAG:-latest}
     container_name: app
@@ -106,9 +111,44 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 256M
+          memory: 220M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  web:
+    image: ${REGISTRY_URL:?REGISTRY_URL is required}/${WEB_IMAGE_NAME:?WEB_IMAGE_NAME is required}:${WEB_IMAGE_TAG:-latest}
+    container_name: app-web
+    restart: unless-stopped
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_ENV: production
+    # ISR revalidation fetches the API at request time (unlike the old
+    # static-export build-time fetch), so this needs `app` reachable at
+    # runtime, not just at image-build time.
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app_net
+    deploy:
+      resources:
+        limits:
+          # Provisional - no built ISR image exists yet to measure real RSS
+          # against. Verify with `docker stats` after the first real
+          # deploy and adjust; if it doesn't fit e2-micro's 1G alongside
+          # everything else on this host, the next step up (e2-small) is
+          # no longer within GCP's Always Free tier, so that's a real
+          # cost decision, not a free bump - see docs/platforms/google-cloud.md.
+          cpus: "0.5"
+          memory: 220M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3

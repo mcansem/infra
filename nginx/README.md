@@ -5,9 +5,9 @@ Reverse proxy configuration, consumed by [docker/app/](../docker/app/) (the stag
 ## app.conf
 
 - Port 80: redirects everything to HTTPS, except `/.well-known/acme-challenge/` (served for Let's Encrypt's webroot verification — see [ssl/README.md](../ssl/README.md)).
-- Port 443: TLS termination, gzip, security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `HSTS`, `Permissions-Policy`, a conservative starter `Content-Security-Policy`), rate limiting (`limit_req`, 10r/s with burst 20 - a starting point, not a measured value), and a single proxied location: everything goes to `app`, the one container serving both the API and the Next.js static export (see [docker/app/README.md](../docker/app/README.md)).
+- Port 443: TLS termination, gzip, security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `HSTS`, `Permissions-Policy`, a conservative starter `Content-Security-Policy`), rate limiting (`limit_req`, 10r/s with burst 20 - a starting point, not a measured value), and routing: `/api/` → the .NET API, everything else → the Next.js (ISR) frontend (see [docker/app/README.md](../docker/app/README.md)).
 
-The upstream is referenced by its Compose service name (`app`) — this config only works mounted into the `docker/app/` stack, on `app_net`.
+Both upstreams are referenced by their Compose service names (`app`, `web`) — this config only works mounted into the `docker/app/` stack, on `app_net`.
 
 ## Conventions
 

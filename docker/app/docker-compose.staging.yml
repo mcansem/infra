@@ -3,6 +3,8 @@ services:
     restart: on-failure
   app:
     restart: on-failure
+  web:
+    restart: on-failure
   # Postgres gets a bounded retry count in every environment, not just
   # production - an unbounded crash-loop against a stateful service wastes
   # disk I/O and can corrupt data files, regardless of which env it's in.
