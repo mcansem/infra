@@ -14,7 +14,7 @@ How an application repository (`portfolio/` in the running example throughout [p
        targetHost: 'staging.example.com',
        images: [
            [name: 'portfolio-web', context: 'frontend'],
-           [name: 'portfolio-app', context: 'backend'],
+           [name: 'portfolio-app', context: 'backend/Portfolio.Api'],
        ],
        registryUrl: 'https://registry.example.com:5000'
    )
@@ -25,6 +25,7 @@ How an application repository (`portfolio/` in the running example throughout [p
    - Expose a health endpoint `docker/app/`'s healthchecks can hit (`/` for `web` is fine; `/health` for `app` — again, matching existing assumptions avoids a compose change).
 3. **A GitHub webhook** pointed at `https://jenkins.<domain>/github-webhook/`, per [jenkins/README.md](../jenkins/README.md).
 4. **Registry credentials** — the app repo doesn't need its own; Jenkins already holds `registry-credentials` (see [jenkins/README.md](../jenkins/README.md)) and injects them via the shared library's `Docker Build & Push` stage.
+5. **Content-publish handling, if the app has a CMS/admin panel like `portfolio/`'s** — `docker/app/docker-compose.yml` wires `app` to call `web`'s revalidate endpoint directly (`Publish__WebhookUrl=http://web:3000/api/revalidate?secret=...`) instead of triggering a Jenkins rebuild on every content edit. Both sides read the same generated `REVALIDATE_SECRET` from `docker/app/.env` — the app repo's API needs a config key matching whatever `Publish__WebhookUrl`'s naming convention implies (`Publish:WebhookUrl` for .NET's `__`-as-nesting convention), and the frontend needs a `/api/revalidate` route that checks the `secret` query param against its own `REVALIDATE_SECRET` env var. See [docker/app/README.md](../docker/app/README.md#publish--revalidate).
 
 ## If the app doesn't fit the existing shape
 

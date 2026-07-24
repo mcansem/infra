@@ -19,7 +19,7 @@ standardDeployPipeline(
 )
 ```
 
-An app that builds more than one image from the same repo (e.g. `portfolio/` — a Next.js frontend and a .NET API, each with their own Dockerfile) uses `images` instead of `imageName`:
+An app that builds more than one image from the same repo (e.g. `portfolio/` — a Next.js frontend and a .NET API, each with their own Dockerfile) uses `images` instead of `imageName`. `context` is the `docker build` context directory, relative to the repo root — match it to where each project's `Dockerfile` actually lives:
 
 ```groovy
 standardDeployPipeline(
@@ -27,7 +27,7 @@ standardDeployPipeline(
     targetHost: 'staging.example.com',
     images: [
         [name: 'portfolio-web', context: 'frontend'],
-        [name: 'portfolio-app', context: 'backend'],
+        [name: 'portfolio-app', context: 'backend/Portfolio.Api'],
     ],
     registryUrl: 'https://registry.example.com:5000'
 )

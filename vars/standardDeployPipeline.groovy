@@ -12,7 +12,14 @@
  *                   context    - docker build context dir (default: '.')
  *                   dockerfile - path to the Dockerfile, relative to context
  *                                (default: 'Dockerfile')
- *                   buildArgs  - map of --build-arg KEY=VALUE pairs (optional)
+ *                   buildArgs  - map of --build-arg KEY=VALUE pairs (optional).
+ *                                Not used by portfolio/'s current images -
+ *                                its config (API_BASE_URL, REVALIDATE_SECRET
+ *                                etc.) is all runtime env vars in
+ *                                docker/app/docker-compose.yml, not build-time
+ *                                args. Kept as a general capability for
+ *                                whichever future app genuinely needs a
+ *                                build-time value baked into its image.
  *
  * Optional config:
  *   targetEnv             - environment label, used only for logging/echo (default: 'staging')
@@ -29,7 +36,7 @@
  *       targetHost: 'staging.example.com',
  *       images: [
  *           [name: 'portfolio-web', context: 'frontend'],
- *           [name: 'portfolio-app', context: 'backend'],
+ *           [name: 'portfolio-app', context: 'backend/Portfolio.Api'],
  *       ],
  *       registryUrl: 'https://registry.example.com:5000'
  *   )

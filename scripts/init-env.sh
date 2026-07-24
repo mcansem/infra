@@ -105,7 +105,7 @@ init_app_env() {
     return
   fi
 
-  local domain registry_url web_image_name web_image_tag image_name image_tag pg_db pg_user pg_password
+  local domain registry_url web_image_name web_image_tag image_name image_tag pg_db pg_user pg_password revalidate_secret
   domain="$(prompt DOMAIN_NAME app.example.com 'App public domain')"
   registry_url="$(prompt REGISTRY_URL registry.example.com:5000 'Private registry URL (host:port)')"
   web_image_name="$(prompt WEB_IMAGE_NAME your-web-name 'Web (frontend) image name (in the private registry)')"
@@ -115,6 +115,11 @@ init_app_env() {
   pg_db="$(prompt POSTGRES_DB app 'Postgres database name')"
   pg_user="$(prompt POSTGRES_USER app 'Postgres user')"
   pg_password="$(generate_secret)"
+  # One secret, one .env, read by both `app` (fires the webhook) and `web`
+  # (checks it on incoming requests) - see docker-compose.yml's comments.
+  # Generated here, not left for a human to invent and copy into two
+  # places.
+  revalidate_secret="$(generate_secret)"
 
   write_env "$env_file" \
     "DOMAIN_NAME=${domain}" \
@@ -125,9 +130,11 @@ init_app_env() {
     "APP_IMAGE_TAG=${image_tag}" \
     "POSTGRES_DB=${pg_db}" \
     "POSTGRES_USER=${pg_user}" \
-    "POSTGRES_PASSWORD=${pg_password}"
+    "POSTGRES_PASSWORD=${pg_password}" \
+    "REVALIDATE_SECRET=${revalidate_secret}"
 
   GENERATED_SECRETS+=("docker/app/.env  POSTGRES_PASSWORD=${pg_password}")
+  GENERATED_SECRETS+=("docker/app/.env  REVALIDATE_SECRET=${revalidate_secret}")
 }
 
 init_observability_env() {
