@@ -3,7 +3,23 @@
  *
  * Required config:
  *   targetHost  - host to deploy to (e.g. staging.example.com)
- *   imageName   - Docker image name to build/tag/push
+ *   Exactly one of:
+ *     imageName - single Docker image name to build/tag/push (single-image apps)
+ *     images    - list of maps, for apps that build more than one image from
+ *                 one repo (e.g. a frontend + an API, each with their own
+ *                 Dockerfile). Each entry:
+ *                   name       - image name to build/tag/push (required)
+ *                   context    - docker build context dir (default: '.')
+ *                   dockerfile - path to the Dockerfile, relative to context
+ *                                (default: 'Dockerfile')
+ *                   buildArgs  - map of --build-arg KEY=VALUE pairs (optional).
+ *                                Not used by portfolio/'s current images -
+ *                                its config (API_BASE_URL, REVALIDATE_SECRET
+ *                                etc.) is all runtime env vars in
+ *                                docker/app/docker-compose.yml, not build-time
+ *                                args. Kept as a general capability for
+ *                                whichever future app genuinely needs a
+ *                                build-time value baked into its image.
  *
  * Optional config:
  *   targetEnv             - environment label, used only for logging/echo (default: 'staging')
@@ -13,13 +29,30 @@
  *   registryUrl           - private registry URL (default: 'https://registry.example.com:5000' - override per environment)
  *   registryCredentialsId - Jenkins credentials ID for the registry (default: 'registry-credentials')
  *   buildStep             - closure with app-specific build steps (default: no-op)
+ *
+ * Example (two images, e.g. portfolio/'s Next.js frontend + .NET API):
+ *   standardDeployPipeline(
+ *       targetEnv: 'staging',
+ *       targetHost: 'staging.example.com',
+ *       images: [
+ *           [name: 'portfolio-web', context: 'frontend'],
+ *           [name: 'portfolio-app', context: 'backend/Portfolio.Api'],
+ *       ],
+ *       registryUrl: 'https://registry.example.com:5000'
+ *   )
  */
 def call(Map config = [:]) {
     if (!config.targetHost) {
         error("standardDeployPipeline: 'targetHost' is required")
     }
-    if (!config.imageName) {
-        error("standardDeployPipeline: 'imageName' is required")
+
+    def images = []
+    if (config.images) {
+        images = config.images
+    } else if (config.imageName) {
+        images = [[name: config.imageName]]
+    } else {
+        error("standardDeployPipeline: either 'imageName' or 'images' is required")
     }
 
     def targetEnv = config.targetEnv ?: 'staging'
@@ -55,9 +88,14 @@ def call(Map config = [:]) {
                 steps {
                     script {
                         docker.withRegistry(registryUrl, registryCredentialsId) {
-                            def image = docker.build("${config.imageName}:${env.BUILD_NUMBER}")
-                            image.push()
-                            image.push('latest')
+                            images.each { img ->
+                                def context = img.context ?: '.'
+                                def dockerfile = img.dockerfile ?: 'Dockerfile'
+                                def buildArgs = (img.buildArgs ?: [:]).collect { k, v -> "--build-arg ${k}=${v}" }.join(' ')
+                                def image = docker.build("${img.name}:${env.BUILD_NUMBER}", "-f ${context}/${dockerfile} ${buildArgs} ${context}")
+                                image.push()
+                                image.push('latest')
+                            }
                         }
                     }
                 }
@@ -80,7 +118,7 @@ def call(Map config = [:]) {
 
         post {
             success {
-                echo "Deployed ${config.imageName}:${env.BUILD_NUMBER} to ${targetEnv} (${config.targetHost})"
+                echo "Deployed [${images.collect { it.name }.join(', ')}]:${env.BUILD_NUMBER} to ${targetEnv} (${config.targetHost})"
             }
         }
     }

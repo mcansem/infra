@@ -3,6 +3,8 @@ services:
     restart: always
   app:
     restart: always
+  web:
+    restart: always
   # Same bounded-retry reasoning as staging (see docker-compose.staging.yml) -
   # postgres never gets an unbounded restart loop.
   postgres:

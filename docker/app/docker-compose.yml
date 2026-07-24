@@ -20,6 +20,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
+      web:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -83,10 +85,13 @@ services:
       retries: 5
       start_period: 10s
 
-  # Single image: a 3-stage Dockerfile in the app repo builds the Next.js
-  # static export, publishes the .NET API, then copies the export into the
-  # API's wwwroot - one ASP.NET Core process serves both. No separate
-  # Next.js/Node runtime on this host.
+  # Two images again, not one: the frontend moved from a build-time static
+  # export to ISR (Incremental Static Regeneration), which needs a
+  # persistent Next.js Node process to serve revalidation - it can no
+  # longer be baked into the API's wwwroot at build time and shipped in
+  # the same image/process. See CHANGELOG.md for the full reasoning this
+  # reverses (content freshness: static export meant every content edit
+  # needed a full CI/CD cycle to appear).
   app:
     image: ${REGISTRY_URL:?REGISTRY_URL is required}/${APP_IMAGE_NAME:?APP_IMAGE_NAME is required}:${APP_IMAGE_TAG:-latest}
     container_name: app
@@ -97,6 +102,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      # Fired by the admin panel's "Publish" action - tells `web` to
+      # revalidate, instead of a full CI/CD rebuild-and-redeploy cycle.
+      # ${REVALIDATE_SECRET} is the same value `web` checks incoming
+      # revalidate requests against - one var, one .env, injected into
+      # both services, so it can't drift out of sync between them (same
+      # reasoning as GRAFANA_DOMAIN staying consistent across two files -
+      # except this one's simpler, both services already share this file).
+      Publish__WebhookUrl: http://web:3000/api/revalidate?secret=${REVALIDATE_SECRET:?REVALIDATE_SECRET is required}
     depends_on:
       postgres:
         condition: service_healthy
@@ -105,10 +118,63 @@ services:
     deploy:
       resources:
         limits:
+          # Also not measured against this specific codebase yet - same
+          # `docker stats` pending note as `web`'s limit below.
           cpus: "0.5"
-          memory: 256M
+          memory: 220M
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  web:
+    image: ${REGISTRY_URL:?REGISTRY_URL is required}/${WEB_IMAGE_NAME:?WEB_IMAGE_NAME is required}:${WEB_IMAGE_TAG:-latest}
+    container_name: app-web
+    restart: unless-stopped
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_ENV: production
+      # Internal Docker-network URL, not the public domain - server-side
+      # ISR fetches go straight to `app`, skipping nginx's public proxy
+      # hairpin entirely.
+      API_BASE_URL: http://app:8080/api
+      # Empty on purpose in every environment here: the client falls back
+      # to a same-origin relative /api path (through nginx's own /api/
+      # routing) rather than an absolute URL. Next.js inlines NEXT_PUBLIC_*
+      # vars into the client bundle at build time, not container start -
+      # if this ever needs to vary per environment, it has to become a
+      # docker build --build-arg in the web image's Dockerfile, setting it
+      # here at container runtime would have no effect on the already-
+      # built bundle.
+      NEXT_PUBLIC_API_URL: ""
+      # Same value app.Publish__WebhookUrl's query string checks against -
+      # see the comment there.
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET is required}
+    # ISR revalidation fetches the API at request time (unlike the old
+    # static-export build-time fetch), so this needs `app` reachable at
+    # runtime, not just at image-build time.
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app_net
+    deploy:
+      resources:
+        limits:
+          # Conservative placeholder, not measured on real host yet -
+          # pending `docker stats` against the actual ISR image on the
+          # GCP host. If it doesn't fit e2-micro's 1G alongside everything
+          # else here, the next step up (e2-small) is no longer within
+          # GCP's Always Free tier, so that's a real cost decision, not a
+          # free bump - see docs/platforms/google-cloud.md.
+          cpus: "0.5"
+          memory: 220M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3
